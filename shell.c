@@ -10,7 +10,7 @@
 
 #define ARCHIVO_DIRECTORIOS "directorios.txt" // Archivo donde se almacenan los directorios creados
 
-/*
+/* escribo esto ahora, solo para prueba
  * Función: crear_directorio
  * -------------------------
  * Crea un nuevo directorio con permisos 0777 (lectura, escritura, ejecución para todos).
