@@ -8,9 +8,9 @@
 #include <pwd.h>       // Para verificar si el usuario existe
 #include <grp.h>       // Para obtener información del grupo
 
-#define ARCHIVO_DIRECTORIOS "directorios.txt" // Archivo donde se almacenan los directorios creados
+//#define ARCHIVO_DIRECTORIOS "directorios.txt" // Archivo donde se almacenan los directorios creados
 
-/* escribo esto ahora, solo para prueba
+/* 
  * Función: crear_directorio
  * -------------------------
  * Crea un nuevo directorio con permisos 0777 (lectura, escritura, ejecución para todos).
@@ -25,18 +25,18 @@
  */
 void crear_directorio(const char *nombre_directorio) {
     // Intentar crear el directorio
-    if (mkdir(nombre_directorio, 0777) == 0) {
+    if (mkdir(nombre_directorio, 0755) == 0) {
         printf("Directorio '%s' creado con éxito.\n", nombre_directorio);
 
         // Abrir el archivo para guardar el nombre del directorio
-        FILE *archivo = fopen(ARCHIVO_DIRECTORIOS, "a");
-        if (archivo == NULL) {
-            printf("Error al abrir el archivo '%s' para guardar el directorio.\n", ARCHIVO_DIRECTORIOS);
-            return;
-        }
-        // Escribir el nombre del directorio en el archivo
-        fprintf(archivo, "%s\n", nombre_directorio);
-        fclose(archivo);
+        // FILE *archivo = fopen(ARCHIVO_DIRECTORIOS, "a");
+        // if (archivo == NULL) {
+        //     printf("Error al abrir el archivo '%s' para guardar el directorio.\n", ARCHIVO_DIRECTORIOS);
+        //     return;
+        // }
+        // // Escribir el nombre del directorio en el archivo
+        // fprintf(archivo, "%s\n", nombre_directorio);
+        // fclose(archivo);
     } else {
         // Mostrar un mensaje si ocurre un error al crear el directorio
         printf("Error al crear el directorio '%s': %s\n", nombre_directorio, strerror(errno));
@@ -53,40 +53,30 @@ void crear_directorio(const char *nombre_directorio) {
  */
 
 // Función para listar los directorios creados o el contenido de un directorio
-void listar_directorios(char *directorio) {
-    FILE *archivo;
-    if (directorio == NULL) {
-        // Si no se pasa un argumento, listar los directorios creados
-        archivo = fopen(ARCHIVO_DIRECTORIOS, "r");
-        if (archivo == NULL) {
-            printf("No hay directorios creados o el archivo '%s' no existe.\n", ARCHIVO_DIRECTORIOS);
-            return;
-        }
+void listar_directorios(const char *ruta) {
+    DIR *dir;
+    struct dirent *entry;
 
-        printf("Directorios creados:\n");
-        char nombre_directorio[256];
-        while (fgets(nombre_directorio, sizeof(nombre_directorio), archivo)) {
-            nombre_directorio[strcspn(nombre_directorio, "\n")] = 0; // Eliminar el salto de línea
-            printf("- %s\n", nombre_directorio);
-        }
-        fclose(archivo);
-    } else {
-        // Si se pasa un argumento, listar el contenido de ese directorio
-        DIR *dir = opendir(directorio);
-        if (dir) {
-            printf("Contenido del directorio '%s':\n", directorio);
-            struct dirent *entry;
-            while ((entry = readdir(dir)) != NULL) {
-                // No mostrar '.' y '..'
-                if (strcmp(entry->d_name, ".") != 0 && strcmp(entry->d_name, "..") != 0) {
-                    printf("- %s\n", entry->d_name);
-                }
-            }
-            closedir(dir);
-        } else {
-            printf("Error al abrir el directorio '%s': %s\n", directorio, strerror(errno));
+    // Si no se especifica una ruta, usamos el directorio actual
+    if (ruta == NULL) {
+        ruta = ".";
+    }
+
+    dir = opendir(ruta);
+    if (dir == NULL) {
+        printf("Error al abrir el directorio '%s': %s\n", ruta, strerror(errno));
+        return;
+    }
+
+    printf("Contenido del directorio '%s':\n", ruta);
+    while ((entry = readdir(dir)) != NULL) {
+        // Ignoramos las entradas especiales "." y ".."
+        if (strcmp(entry->d_name, ".") != 0 && strcmp(entry->d_name, "..") != 0) {
+            printf("- %s\n", entry->d_name);
         }
     }
+
+    closedir(dir);
 }
 
 
@@ -123,61 +113,15 @@ void cambiar_directorio(const char *nombre_directorio) {
 
 
 // Función para renombrar un archivo o directorio
-// Función para renombrar un archivo o directorio
 void renombrar_archivo(const char *nombre_actual, const char *nuevo_nombre) {
     // Renombrar el directorio o archivo en el sistema de archivos
     if (rename(nombre_actual, nuevo_nombre) == 0) {
         printf("El archivo o directorio '%s' ha sido renombrado a '%s'.\n", nombre_actual, nuevo_nombre);
-
-        // Abrir el archivo de directorios para actualizar
-        FILE *archivo = fopen(ARCHIVO_DIRECTORIOS, "r+");
-        if (archivo == NULL) {
-            printf("Error al abrir el archivo '%s' para actualizarlo.\n", ARCHIVO_DIRECTORIOS);
-            return;
-        }
-
-        // Crear un archivo temporal para escribir los datos actualizados
-        FILE *temp = fopen("temp.txt", "w");
-        if (temp == NULL) {
-            printf("Error al crear archivo temporal.\n");
-            fclose(archivo);
-            return;
-        }
-
-        // Leer todas las líneas del archivo original
-        char linea[256];
-        int encontrado = 0;
-        while (fgets(linea, sizeof(linea), archivo)) {
-            // Eliminar salto de línea
-            linea[strcspn(linea, "\n")] = 0;
-
-            // Si encontramos el directorio a renombrar, no lo escribimos, lo reemplazamos
-            if (strcmp(linea, nombre_actual) == 0) {
-                fprintf(temp, "%s\n", nuevo_nombre);
-                encontrado = 1;
-            } else {
-                // Si no es el directorio que estamos renombrando, lo copiamos
-                fprintf(temp, "%s\n", linea);
-            }
-        }
-
-        // Si no encontramos el directorio original, agrega el nuevo
-        if (!encontrado) {
-            fprintf(temp, "%s\n", nuevo_nombre);
-        }
-
-        // Cerrar los archivos
-        fclose(archivo);
-        fclose(temp);
-
-        // Reemplazar el archivo original con el temporal
-        remove(ARCHIVO_DIRECTORIOS);
-        rename("temp.txt", ARCHIVO_DIRECTORIOS);
-
     } else {
         printf("Error al renombrar '%s' a '%s': %s\n", nombre_actual, nuevo_nombre, strerror(errno));
     }
 }
+
 
 
 // Función para mover un archivo o directorio
