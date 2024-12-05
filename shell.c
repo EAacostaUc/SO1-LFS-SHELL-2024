@@ -7,6 +7,7 @@
 #include <dirent.h>     // Para opendir(), readdir(), closedir()
 #include <pwd.h>       // Para verificar si el usuario existe
 #include <grp.h>       // Para obtener información del grupo
+#include "comandos_sistema.h"
 
 
 /* 
@@ -483,6 +484,21 @@ int main() {
                     cambiar_contrasena(argumentos[0], argumentos[1]); // Usuario y nueva contraseña
                 } else {
                     printf("Error: Debes proporcionar el nombre del usuario y la nueva contraseña.\n");
+                }
+            } else if (strcmp(accion, "ejecutar") == 0) {
+                if (num_argumentos >= 1) {
+                    // Unir los argumentos en un solo comando
+                    char comando_final[256] = "";
+                    for (int i = 0; i < num_argumentos; i++) {
+                        strcat(comando_final, argumentos[i]);
+                        if (i < num_argumentos - 1) {
+                            strcat(comando_final, " ");
+                        }
+                    }
+                    // Ejecutar el comando
+                    ejecutar_comando(comando_final);
+                } else {
+                    printf("Error: Debes proporcionar un comando del sistema para ejecutar.\n");
                 }
             }
 
