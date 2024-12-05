@@ -1,4 +1,4 @@
-#include "comandos_sistema.h"
+#include "prototipos.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
