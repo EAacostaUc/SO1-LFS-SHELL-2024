@@ -7,7 +7,7 @@
 #include <dirent.h>     // Para opendir(), readdir(), closedir()
 #include <pwd.h>       // Para verificar si el usuario existe
 #include <grp.h>       // Para obtener información del grupo
-#include "comandos_sistema.h"
+#include "prototipos.h"
 
 
 /* 
