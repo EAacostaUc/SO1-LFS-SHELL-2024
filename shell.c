@@ -8,7 +8,6 @@
 #include <pwd.h>       // Para verificar si el usuario existe
 #include <grp.h>       // Para obtener información del grupo
 
-//#define ARCHIVO_DIRECTORIOS "directorios.txt" // Archivo donde se almacenan los directorios creados
 
 /* 
  * Función: crear_directorio
@@ -27,16 +26,6 @@ void crear_directorio(const char *nombre_directorio) {
     // Intentar crear el directorio
     if (mkdir(nombre_directorio, 0755) == 0) {
         printf("Directorio '%s' creado con éxito.\n", nombre_directorio);
-
-        // Abrir el archivo para guardar el nombre del directorio
-        // FILE *archivo = fopen(ARCHIVO_DIRECTORIOS, "a");
-        // if (archivo == NULL) {
-        //     printf("Error al abrir el archivo '%s' para guardar el directorio.\n", ARCHIVO_DIRECTORIOS);
-        //     return;
-        // }
-        // // Escribir el nombre del directorio en el archivo
-        // fprintf(archivo, "%s\n", nombre_directorio);
-        // fclose(archivo);
     } else {
         // Mostrar un mensaje si ocurre un error al crear el directorio
         printf("Error al crear el directorio '%s': %s\n", nombre_directorio, strerror(errno));
@@ -361,43 +350,6 @@ void agregar_usuario(const char *nombre_usuario, const char *contrasena, const c
 
 
 
-
-
-// Esto solamente sirve para ver la informacion del nuevo usuario creado...
-
-void ver_usuario(const char *nombre_usuario) {
-    FILE *archivo = fopen("usuarios_extra.txt", "r");
-    if (archivo == NULL) {
-        printf("Error: No se pudo abrir el archivo 'usuarios_extra.txt'.\n");
-        return;
-    }
-
-    char linea[256];
-    int encontrado = 0;
-
-    while (fgets(linea, sizeof(linea), archivo)) {
-        // Buscar la línea que contiene el nombre del usuario
-        if (strstr(linea, "Usuario: ") && strstr(linea, nombre_usuario)) {
-            encontrado = 1;
-            printf("\n--- Información del Usuario '%s' ---\n", nombre_usuario);
-
-            // Mostrar las líneas relacionadas con el usuario
-            do {
-                printf("%s", linea); // Imprimir la línea actual
-            } while (fgets(linea, sizeof(linea), archivo) && strcmp(linea, "\n") != 0);
-            break;
-        }
-    }
-
-    fclose(archivo);
-
-    if (!encontrado) {
-        printf("Error: El usuario '%s' no se encuentra registrado.\n", nombre_usuario);
-    }
-}
-
-
-
 // Función para cambiar la contraseña de un usuario
 void cambiar_contrasena(const char *nombre_usuario, const char *nueva_contrasena) {
     if (!usuario_existe(nombre_usuario)) {
@@ -525,12 +477,6 @@ int main() {
                     agregar_usuario(argumentos[0], argumentos[1], argumentos[2], argumentos[3], argumentos[4]);
                 } else {
                     printf("Error: Debes proporcionar el nombre del usuario, contraseña, datos personales, horario y lugares de conexión.\n");
-                }
-            } else if (strcmp(accion, "verusuario") == 0) {
-                if (num_argumentos >= 1) {
-                    ver_usuario(argumentos[0]);
-                } else {
-                    printf("Error: Debes proporcionar el nombre del usuario para ver su información.\n");
                 }
             } else if (strcmp(accion, "contrasena") == 0) {
                 if (num_argumentos >= 2) {
