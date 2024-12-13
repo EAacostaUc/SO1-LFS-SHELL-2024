@@ -10,9 +10,8 @@
 #include "prototipos.h"
 
 
-/* 
- * 
- Función: crear_directorio
+/* holaaaaa
+ * Función: crear_directorio
  * -------------------------
  * Crea un nuevo directorio con permisos 0777 (lectura, escritura, ejecución para todos).
  * También guarda el nombre del directorio en un archivo llamado 'directorios.txt'.
