@@ -137,21 +137,40 @@ void mover_archivo_o_directorio(const char *origen, const char *destino) {
 }
 
 
-// Función para copiar un archivo de un lugar a otro
+
+
+/*
+ * Función: copiar_archivo
+ * -----------------------
+ * Copia un archivo de origen a destino.
+ * Si el destino es un directorio, lo copia dentro de él.
+ */
 void copiar_archivo(const char *origen, const char *destino) {
     FILE *f_origen, *f_destino;
-    char buffer[1024];
+    char buffer[1024];  // Buffer para almacenar los datos mientras se copian
     size_t bytes;
-    char ruta_final[512];
-    struct stat info_destino;
+    char pathDestino[512];  // Ruta completa para el archivo destino
 
-    // Comprobar si el destino es un directorio
-    if (stat(destino, &info_destino) == 0 && S_ISDIR(info_destino.st_mode)) {
-        // Construir la ruta completa (directorio destino + nombre del archivo origen)
-        snprintf(ruta_final, sizeof(ruta_final), "%s/%s", destino, strrchr(origen, '/') ? strrchr(origen, '/') + 1 : origen);
+    struct stat st;
+    // Verificar si el origen es un archivo
+    if (stat(origen, &st) != 0) {
+        printf("Error: El archivo origen '%s' no existe.\n", origen);
+        return;
+    }
+
+    // Verificar si el origen es un archivo (no directorio)
+    if (!S_ISREG(st.st_mode)) {
+        printf("Error: '%s' no es un archivo regular.\n", origen);
+        return;
+    }
+
+    // Verificar si el destino es un directorio
+    if (stat(destino, &st) == 0 && S_ISDIR(st.st_mode)) {
+        // Si el destino es un directorio, crear la ruta completa para el archivo destino
+        snprintf(pathDestino, sizeof(pathDestino), "%s/%s", destino, strrchr(origen, '/') ? strrchr(origen, '/') + 1 : origen);
     } else {
         // Si el destino no es un directorio, usarlo tal cual
-        strncpy(ruta_final, destino, sizeof(ruta_final));
+        strncpy(pathDestino, destino, sizeof(pathDestino));
     }
 
     // Abrir el archivo origen en modo lectura binaria
@@ -162,9 +181,9 @@ void copiar_archivo(const char *origen, const char *destino) {
     }
 
     // Abrir el archivo destino en modo escritura binaria
-    f_destino = fopen(ruta_final, "wb");
+    f_destino = fopen(pathDestino, "wb");
     if (f_destino == NULL) {
-        printf("Error al crear el archivo destino '%s': %s\n", ruta_final, strerror(errno));
+        printf("Error al crear el archivo destino '%s': %s\n", pathDestino, strerror(errno));
         fclose(f_origen);
         return;
     }
@@ -174,12 +193,12 @@ void copiar_archivo(const char *origen, const char *destino) {
         fwrite(buffer, 1, bytes, f_destino);
     }
 
-    printf("Archivo '%s' copiado a '%s'.\n", origen, ruta_final);
+    printf("Archivo '%s' copiado a '%s'.\n", origen, pathDestino);
 
-    // Cerrar los archivos
     fclose(f_origen);
     fclose(f_destino);
 }
+
 
 
 
@@ -454,9 +473,10 @@ int main() {
                 if (num_argumentos >= 2) {
                     copiar_archivo(argumentos[0], argumentos[1]);
                 } else {
-                    printf("Error: Debes proporcionar el archivo origen y el destino.\n");
+                    printf("Error: Debes proporcionar el archivo o directorio origen y el destino.\n");
                 }
-            } else if (strcmp(accion, "permisos") == 0) {
+            }
+            else if (strcmp(accion, "permisos") == 0) {
                 if (num_argumentos >= 2) {
                     // Argumento 1: modo; Resto: archivos
                     cambiar_permisos(argumentos[0], &argumentos[1], num_argumentos - 1);
