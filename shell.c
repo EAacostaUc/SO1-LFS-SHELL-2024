@@ -11,6 +11,7 @@
 
 
 /* 
+
  * Función: crear_directorio
  * -------------------------
  * Crea un nuevo directorio con permisos 0777 (lectura, escritura, ejecución para todos).
