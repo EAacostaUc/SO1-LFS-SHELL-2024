@@ -10,6 +10,7 @@
 #include "prototipos.h"
 
 
+
 /* probando probando
  * Función: crear_directorio
  * -------------------------
@@ -55,6 +56,12 @@ void listar_directorios(const char *ruta) {
     dir = opendir(ruta);
     if (dir == NULL) {
         printf("Error al abrir el directorio '%s': %s\n", ruta, strerror(errno));
+
+        // esto es para ir agregando los errores que se le presentan al usuario e ir guardando en sistema_error.log
+        char mensaje[256];
+        snprintf(mensaje, sizeof(mensaje), "Error al abrir el directorio '%s': %s\n", ruta, strerror(errno));
+        registrar_error(mensaje);  // Registrar en el log
+
         return;
     }
 
@@ -97,6 +104,11 @@ void cambiar_directorio(const char *nombre_directorio) {
     } else {
         // Mostrar un mensaje si ocurre un error al cambiar de directorio
         printf("Error al cambiar al directorio '%s': %s\n", nombre_directorio, strerror(errno));
+
+        // esto es para ir agregando los errores que se le presentan al usuario e ir guardando en sistema_error.log
+        char mensaje[256];
+        snprintf(mensaje, sizeof(mensaje), "Error al cambiar al directorio '%s': %s\n", nombre_directorio, strerror(errno));
+        registrar_error(mensaje);  // Registrar en el log
     }
 }
 
