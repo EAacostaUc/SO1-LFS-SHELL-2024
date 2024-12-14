@@ -121,6 +121,11 @@ void renombrar_archivo(const char *nombre_actual, const char *nuevo_nombre) {
         printf("El archivo o directorio '%s' ha sido renombrado a '%s'.\n", nombre_actual, nuevo_nombre);
     } else {
         printf("Error al renombrar '%s' a '%s': %s\n", nombre_actual, nuevo_nombre, strerror(errno));
+
+        // esto es para ir agregando los errores que se le presentan al usuario e ir guardando en sistema_error.log
+        char mensaje[256];
+        snprintf(mensaje, sizeof(mensaje), "Error al renombrar '%s' a '%s': %s\n", nombre_actual, nuevo_nombre, strerror(errno));
+        registrar_error(mensaje);  // Registrar en el log
     }
 }
 
@@ -145,6 +150,11 @@ void mover_archivo_o_directorio(const char *origen, const char *destino) {
         printf("Archivo o directorio '%s' movido a '%s'.\n", origen, ruta_final);
     } else {
         printf("Error al mover '%s' a '%s': %s\n", origen, ruta_final, strerror(errno));
+
+        // esto es para ir agregando los errores que se le presentan al usuario e ir guardando en sistema_error.log
+        char mensaje[256];
+        snprintf(mensaje, sizeof(mensaje), "Error al mover '%s' a '%s': %s\n", origen, ruta_final, strerror(errno));
+        registrar_error(mensaje);  // Registrar en el log
     }
 }
 
