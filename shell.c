@@ -471,6 +471,9 @@ int main() {
             comando[strlen(comando) - 1] = '\0';  // Eliminar espacios al final
         }
 
+        // Registrar el comando ingresado por el usuario
+        registrar_movimientos(comando);
+
         // Dividimos el comando en acción y argumentos
         accion = strtok(comando, " ");
         num_argumentos = 0;
