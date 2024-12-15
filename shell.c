@@ -65,7 +65,7 @@ void listar_directorios(const char *ruta) {
         return;
     }
 
-    printf("Contenido del directorio '%s':\n", ruta);
+    //printf("Contenido del directorio '%s':\n", ruta);
     while ((entry = readdir(dir)) != NULL) {
         // Ignoramos las entradas especiales "." y ".."
         if (strcmp(entry->d_name, ".") != 0 && strcmp(entry->d_name, "..") != 0) {
@@ -177,12 +177,24 @@ void copiar_archivo(const char *origen, const char *destino) {
     // Verificar si el origen es un archivo
     if (stat(origen, &st) != 0) {
         printf("Error: El archivo origen '%s' no existe.\n", origen);
+
+        // esto es para ir agregando los errores que se le presentan al usuario e ir guardando en sistema_error.log
+        char mensaje[256];
+        snprintf(mensaje, sizeof(mensaje), "Error: El archivo origen '%s' no existe.\n", origen);
+        registrar_error(mensaje);  // Registrar en el log
+
         return;
     }
 
     // Verificar si el origen es un archivo (no directorio)
     if (!S_ISREG(st.st_mode)) {
         printf("Error: '%s' no es un archivo regular.\n", origen);
+
+        // esto es para ir agregando los errores que se le presentan al usuario e ir guardando en sistema_error.log
+        char mensaje[256];
+        snprintf(mensaje, sizeof(mensaje), "Error: '%s' no es un archivo regular.\n", origen);
+        registrar_error(mensaje);  // Registrar en el log
+
         return;
     }
 
@@ -242,33 +254,10 @@ void cambiar_permisos_recursivo(const char *ruta, mode_t permisos) {
         } else {
             printf("Error al cambiar permisos de '%s': %s\n", ruta, strerror(errno));
         }
+    } else {
+        printf("Advertencia: '%s' no es un archivo regular. Se omitirá.\n", ruta);
     }
-    // Si es un directorio, aplicar recursivamente
-    else if (S_ISDIR(st.st_mode)) {
-        if (chmod(ruta, permisos) == 0) {
-            printf("Permisos del directorio '%s' cambiados a '%o'.\n", ruta, permisos);
-        } else {
-            printf("Error al cambiar permisos del directorio '%s': %s\n", ruta, strerror(errno));
-        }
-
-        // Abrir el directorio y aplicar a su contenido
-        DIR *dir = opendir(ruta);
-        if (dir) {
-            struct dirent *entry;
-            while ((entry = readdir(dir)) != NULL) {
-                // Ignorar las entradas `.` y `..`
-                if (strcmp(entry->d_name, ".") != 0 && strcmp(entry->d_name, "..") != 0) {
-                    // Construir la ruta completa del archivo o subdirectorio
-                    char ruta_completa[512];
-                    snprintf(ruta_completa, sizeof(ruta_completa), "%s/%s", ruta, entry->d_name);
-                    cambiar_permisos_recursivo(ruta_completa, permisos);
-                }
-            }
-            closedir(dir);
-        } else {
-            printf("Error al abrir el directorio '%s': %s\n", ruta, strerror(errno));
-        }
-    }
+    
 }
 
 // Función para manejar múltiples rutas
@@ -278,6 +267,12 @@ void cambiar_permisos(const char *modo, char **archivos, int num_archivos) {
 
     if (*endptr != '\0' || permisos > 0777 || permisos < 0) {
         printf("Error: El modo '%s' no es válido. Debe ser un número octal (ejemplo: 644, 755).\n", modo);
+
+        // esto es para ir agregando los errores que se le presentan al usuario e ir guardando en sistema_error.log
+        char mensaje[256];
+        snprintf(mensaje, sizeof(mensaje), "Error: El modo '%s' no es válido. Debe ser un número octal (ejemplo: 644, 755).\n", modo);
+        registrar_error(mensaje);  // Registrar en el log
+
         return;
     }
 
@@ -316,6 +311,12 @@ void cambiar_propietario_y_grupo(const char *nombre_usuario, const char *nombre_
         uid = obtener_uid(nombre_usuario);
         if (uid == (uid_t)-1) {
             printf("Error: El usuario '%s' no existe.\n", nombre_usuario);
+
+            // esto es para ir agregando los errores que se le presentan al usuario e ir guardando en sistema_error.log
+            char mensaje[256];
+            snprintf(mensaje, sizeof(mensaje), "Error: El usuario '%s' no existe.\n", nombre_usuario);
+            registrar_error(mensaje);  // Registrar en el log
+
             return;
         }
     }
@@ -325,6 +326,12 @@ void cambiar_propietario_y_grupo(const char *nombre_usuario, const char *nombre_
         gid = obtener_gid(nombre_grupo);
         if (gid == (gid_t)-1) {
             printf("Error: El grupo '%s' no existe.\n", nombre_grupo);
+
+            // esto es para ir agregando los errores que se le presentan al usuario e ir guardando en sistema_error.log
+            char mensaje[256];
+            snprintf(mensaje, sizeof(mensaje), "Error: El grupo '%s' no existe.\n", nombre_grupo);
+            registrar_error(mensaje);  // Registrar en el log
+
             return;
         }
     }
@@ -396,6 +403,12 @@ void agregar_usuario(const char *nombre_usuario, const char *contrasena, const c
 void cambiar_contrasena(const char *nombre_usuario, const char *nueva_contrasena) {
     if (!usuario_existe(nombre_usuario)) {
         printf("Error: El usuario '%s' no existe.\n", nombre_usuario);
+
+        // esto es para ir agregando los errores que se le presentan al usuario e ir guardando en sistema_error.log
+        char mensaje[256];
+        snprintf(mensaje, sizeof(mensaje), "Error: El usuario '%s' no existe.\n", nombre_usuario);
+        registrar_error(mensaje);  // Registrar en el log
+
         return;
     }
 
@@ -407,6 +420,11 @@ void cambiar_contrasena(const char *nombre_usuario, const char *nueva_contrasena
     int resultado = system(comando);
     if (resultado == 0) {
         printf("Contraseña para el usuario '%s' cambiada con éxito.\n", nombre_usuario);
+
+        // esto es para ir agregando los errores que se le presentan al usuario e ir guardando en sistema_error.log
+        char mensaje[256];
+        snprintf(mensaje, sizeof(mensaje), "Contraseña para el usuario '%s' cambiada con éxito.\n", nombre_usuario);
+        registrar_error(mensaje);  // Registrar en el log
     } else {
         printf("Error al cambiar la contraseña para el usuario '%s'.\n", nombre_usuario);
     }
