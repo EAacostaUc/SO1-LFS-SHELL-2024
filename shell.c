@@ -346,6 +346,11 @@ void cambiar_propietario_y_grupo(const char *nombre_usuario, const char *nombre_
                    (nombre_grupo && strcmp(nombre_grupo, "-") != 0) ? nombre_grupo : "(sin cambio)");
         } else {
             printf("Error al cambiar propietario o grupo de '%s': %s\n", archivos[i], strerror(errno));
+
+            // esto es para ir agregando los errores que se le presentan al usuario e ir guardando en sistema_error.log
+            char mensaje[256];
+            snprintf(mensaje, sizeof(mensaje), "Error al cambiar propietario o grupo de '%s': %s\n", archivos[i], strerror(errno));
+            registrar_error(mensaje);  // Registrar en el log
         }
     }
 }
@@ -374,6 +379,11 @@ void agregar_usuario(const char *nombre_usuario, const char *contrasena, const c
     snprintf(comando, sizeof(comando), "useradd -m %s", nombre_usuario);
     if (system(comando) != 0) {
         printf("Error al crear el usuario '%s'. Verifica si tienes permisos de root.\n", nombre_usuario);
+
+        // esto es para ir agregando los errores que se le presentan al usuario e ir guardando en sistema_error.log
+        char mensaje[256];
+        snprintf(mensaje, sizeof(mensaje), "Error al crear el usuario '%s'. Verifica si tienes permisos de root.\n", nombre_usuario);
+        registrar_error(mensaje);  // Registrar en el log
         return;
     }
 
@@ -435,99 +445,15 @@ void cambiar_contrasena(const char *nombre_usuario, const char *nueva_contrasena
         registrar_error(mensaje);  // Registrar en el log
     } else {
         printf("Error al cambiar la contraseña para el usuario '%s'.\n", nombre_usuario);
+
+        // esto es para ir agregando los errores que se le presentan al usuario e ir guardando en sistema_error.log
+        char mensaje[256];
+        snprintf(mensaje, sizeof(mensaje), "Error al cambiar la contraseña para el usuario '%s'.\n", nombre_usuario);
+        registrar_error(mensaje);  // Registrar en el log
     }
 }
 
 
-
-// Función para obtener el timestamp actual
-void obtener_timestamp(char *buffer, size_t buffer_size) {
-    // Obtener el tiempo actual
-    time_t t = time(NULL);
-    struct tm *tm_info = localtime(&t);
-
-    // Formatear el timestamp como 'YYYY-MM-DD hh:mm:ss'
-    strftime(buffer, buffer_size, "%Y-%m-%d %H:%M:%S", tm_info);
-}
-
-
-
-// Aca se encargar de comparar si los datos de usuario coinciden, si es que ingreso en su horario y con la Ip permitida, sino, se escribe el mensaje en usuario_horarios_log.log
-void validar_inicio_sesion(const char *usuario, const char *ip_actual, const char *horario_actual, FILE *log_file) {
-    char linea[256];
-    FILE *usuarios_file = fopen("/usr/local/bin/usuarios_agregados.txt", "r");
-    if (usuarios_file == NULL) {
-        fprintf(log_file, "Error: No se pudo abrir el archivo de usuarios para validar.\n");
-        return;
-    }
-
-    char usuario_guardado[50], horario_guardado[50], ips_guardadas[200];
-    int encontrado = 0;
-
-    while (fgets(linea, sizeof(linea), usuarios_file)) {
-        if (sscanf(linea, "Usuario: %s\nHorario: %s\nIPs permitidas: %[^\n]\n",
-                   usuario_guardado, horario_guardado, ips_guardadas) == 3) {
-            if (strcmp(usuario, usuario_guardado) == 0) {
-                encontrado = 1;
-
-                // Validar horario
-                if (strcmp(horario_actual, horario_guardado) != 0) {
-                    fprintf(log_file, "Advertencia: Usuario '%s' inició sesión fuera del horario permitido. Horario actual: %s, Horario permitido: %s\n",
-                            usuario, horario_actual, horario_guardado);
-                }
-
-                // Validar IP
-                if (strstr(ips_guardadas, ip_actual) == NULL) {
-                    fprintf(log_file, "Advertencia: Usuario '%s' inició sesión desde una IP no permitida: %s. IPs permitidas: %s\n",
-                            usuario, ip_actual, ips_guardadas);
-                }
-                break;
-            }
-        }
-    }
-
-    if (!encontrado) {
-        fprintf(log_file, "Advertencia: Usuario '%s' no está registrado en el sistema.\n", usuario);
-    }
-
-    fclose(usuarios_file);
-}
-
-
-// funcion para registrar inicio y cierre de sesion con la hora correspondiente
-void registrar_sesion(const char *usuario, const char *accion, const char *ip_actual, const char *horario_actual) {
-    FILE *log_file = fopen("/var/log/shell/usuario_horarios_log.log", "a");
-    if (log_file == NULL) {
-        printf("Error al abrir el archivo de log 'usuario_horarios_log.log'.\n");
-        return;
-    }
-
-    char timestamp[64];
-    obtener_timestamp(timestamp, sizeof(timestamp));
-
-    fprintf(log_file, "%s: Usuario '%s' %s sesión desde IP '%s' en horario '%s'.\n",
-            timestamp, usuario, accion, ip_actual, horario_actual);
-
-    // Validar horario e IP
-    validar_inicio_sesion(usuario, ip_actual, horario_actual, log_file);
-
-    fclose(log_file);
-}
-
-
-
-// funcion para obtener la ip con el que ingreso el usuario
-void obtener_ip_actual(char *ip_buffer, size_t buffer_size) {
-    FILE *fp = popen("hostname -I | awk '{print $1}'", "r");
-    if (fp == NULL) {
-        strncpy(ip_buffer, "desconocido", buffer_size);
-        return;
-    }
-
-    fgets(ip_buffer, buffer_size, fp);
-    ip_buffer[strcspn(ip_buffer, "\n")] = '\0'; // Eliminar salto de línea
-    pclose(fp);
-}
 
 
 
