@@ -9,9 +9,10 @@
 #include <stddef.h>
 
 
-#define ERRORES_LOG_PATH "/var/log/shell/sistema_error.log"
-#define MOVIMIENTOS_LOG_PATH "/var/log/shell/shell_movimientos.log"
 #define USUARIOS_LOG_PATH "/var/log/shell/usuario_horarios_log.log"
+#define MOVIMIENTOS_LOG_PATH "/var/log/shell/shell_movimientos.log"
+#define ERRORES_LOG_PATH "/var/log/shell/sistema_error.log"
+
 
 // Función para registrar un error en el archivo de log
 void registrar_error(const char *mensaje) {
