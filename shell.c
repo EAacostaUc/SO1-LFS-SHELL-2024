@@ -431,42 +431,70 @@ void cambiar_contrasena(const char *nombre_usuario, const char *nueva_contrasena
         return;
     }
 
-    // Verificar si el usuario actual es root
+    // Verificar si el usuario actual es root o el mismo usuario
     if (strcmp(usuario_actual, "root") == 0 || strcmp(usuario_actual, nombre_usuario) == 0) {
-        // Si es root o el usuario que está intentando cambiar su propia contraseña
-        char comando[256];
-        snprintf(comando, sizeof(comando), "echo '%s:%s' | chpasswd", nombre_usuario, nueva_contrasena);
+        if (strcmp(usuario_actual, nombre_usuario) == 0 && strcmp(usuario_actual, "root") != 0) {
+            // El usuario no root cambiará su propia contraseña interactivamente
+            printf("Cambiando la contraseña del usuario '%s'. Por favor, introduce la nueva contraseña.\n", usuario_actual);
 
-        // Ejecutar el comando passwd
-        int resultado = system(comando);
-        if (resultado == 0) {
-            printf("Contraseña para el usuario '%s' cambiada con éxito.\n", nombre_usuario);
+            char comando[256];
+            snprintf(comando, sizeof(comando), "passwd");
 
-            // esto es para ir agregando los errores que se le presentan al usuario e ir guardando en sistema_error.log
-            char mensaje[256];
-            snprintf(mensaje, sizeof(mensaje), "Contraseña para el usuario '%s' cambiada con éxito.\n", nombre_usuario);
-            registrar_error(mensaje);  // Registrar en el log
+            // Ejecutar el comando passwd sin el nombre del usuario
+            int resultado = system(comando);
+            if (resultado == 0) {
+                printf("Contraseña para el usuario '%s' cambiada con éxito.\n", usuario_actual);
 
+                // Registrar en el log
+                char mensaje[256];
+                snprintf(mensaje, sizeof(mensaje), "Contraseña para el usuario '%s' cambiada con éxito.\n", usuario_actual);
+                registrar_error(mensaje);
+            } else {
+                printf("Error al cambiar la contraseña para el usuario '%s'.\n", usuario_actual);
+
+                // Registrar en el log
+                char mensaje[256];
+                snprintf(mensaje, sizeof(mensaje), "Error al cambiar la contraseña para el usuario '%s'.\n", usuario_actual);
+                registrar_error(mensaje);
+            }
         } else {
-            printf("Error al cambiar la contraseña para el usuario '%s'.\n", nombre_usuario);
+            // El usuario root cambia contraseñas sin restricciones
+            if (nueva_contrasena == NULL || strlen(nueva_contrasena) == 0) {
+                printf("Error: Debes proporcionar la nueva contraseña para el usuario '%s'.\n", nombre_usuario);
+                return;
+            }
 
-            // esto es para ir agregando los errores que se le presentan al usuario e ir guardando en sistema_error.log
-            char mensaje[256];
-            snprintf(mensaje, sizeof(mensaje), "Error al cambiar la contraseña para el usuario '%s'.\n", nombre_usuario);
-            registrar_error(mensaje);  // Registrar en el log
+            char comando[256];
+            snprintf(comando, sizeof(comando), "echo '%s:%s' | chpasswd", nombre_usuario, nueva_contrasena);
 
+            // Ejecutar el comando
+            int resultado = system(comando);
+            if (resultado == 0) {
+                printf("Contraseña para el usuario '%s' cambiada con éxito.\n", nombre_usuario);
+
+                // Registrar en el log
+                char mensaje[256];
+                snprintf(mensaje, sizeof(mensaje), "Contraseña para el usuario '%s' cambiada con éxito.\n", nombre_usuario);
+                registrar_error(mensaje);
+            } else {
+                printf("Error al cambiar la contraseña para el usuario '%s'.\n", nombre_usuario);
+
+                // Registrar en el log
+                char mensaje[256];
+                snprintf(mensaje, sizeof(mensaje), "Error al cambiar la contraseña para el usuario '%s'.\n", nombre_usuario);
+                registrar_error(mensaje);
+            }
         }
     } else {
-        // Si el usuario no es root ni su propia cuenta
-        printf("Error: Solo el usuario root puede cambiar la contraseña de otros usuarios.\n");
+        // Si el usuario no es root y no coincide con la cuenta actual
+        printf("Error: No tienes permisos para cambiar la contraseña de otros usuarios.\n");
 
-        // esto es para ir agregando los errores que se le presentan al usuario e ir guardando en sistema_error.log
+        // Registrar en el log
         char mensaje[256];
-        snprintf(mensaje, sizeof(mensaje), "Error: Solo el usuario root puede cambiar la contraseña de otros usuarios.\n");
-        registrar_error(mensaje);  // Registrar en el log
+        snprintf(mensaje, sizeof(mensaje), "Error: Usuario '%s' intentó cambiar la contraseña de '%s' sin permisos.\n", usuario_actual, nombre_usuario);
+        registrar_error(mensaje);
     }
 }
-
 
 
 
