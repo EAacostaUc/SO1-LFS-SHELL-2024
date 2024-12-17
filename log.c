@@ -103,7 +103,8 @@ void obtener_timestamp(char *buffer, size_t buffer_size) {
 
 // Función para obtener la IP actual del usuario
 void obtener_ip_actual(char *ip_buffer, size_t buffer_size) {
-    FILE *fp = popen("hostname -I | awk '{print $1}'", "r");
+    FILE *fp = popen("ip addr show | awk '/inet / {print $2}' | cut -d'/' -f1 | head -n 1", "r");
+
     if (fp == NULL) {
         strncpy(ip_buffer, "desconocido", buffer_size);
         return;
