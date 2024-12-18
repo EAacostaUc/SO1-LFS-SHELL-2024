@@ -8,8 +8,11 @@
 #include <pwd.h>       // Para verificar si el usuario existe
 #include <grp.h>       // Para obtener información del grupo
 #include <time.h>
+#include <fcntl.h>     // Para operaciones con archivos
+#include <libgen.h>
 #include "prototipos.h"
 
+#define BUFFER_SIZE 4096 //tamaño del buffer que se utiliza para leer y escribir bloques de datos durante la copia del archivo.
 
 
 /* probando probando
@@ -168,71 +171,141 @@ void mover_archivo_o_directorio(const char *origen, const char *destino) {
  * Copia un archivo de origen a destino.
  * Si el destino es un directorio, lo copia dentro de él.
  */
+// Función para copiar archivos
 void copiar_archivo(const char *origen, const char *destino) {
-    FILE *f_origen, *f_destino;
-    char buffer[1024];  // Buffer para almacenar los datos mientras se copian
-    size_t bytes;
-    char pathDestino[512];  // Ruta completa para el archivo destino
-
-    struct stat st;
-    // Verificar si el origen es un archivo
-    if (stat(origen, &st) != 0) {
-        printf("Error: El archivo origen '%s' no existe.\n", origen);
-
-        // esto es para ir agregando los errores que se le presentan al usuario e ir guardando en sistema_error.log
-        char mensaje[256];
-        snprintf(mensaje, sizeof(mensaje), "Error: El archivo origen '%s' no existe.\n", origen);
-        registrar_error(mensaje);  // Registrar en el log
-
-        return;
-    }
-
-    // Verificar si el origen es un archivo (no directorio)
-    if (!S_ISREG(st.st_mode)) {
-        printf("Error: '%s' no es un archivo regular.\n", origen);
-
-        // esto es para ir agregando los errores que se le presentan al usuario e ir guardando en sistema_error.log
-        char mensaje[256];
-        snprintf(mensaje, sizeof(mensaje), "Error: '%s' no es un archivo regular.\n", origen);
-        registrar_error(mensaje);  // Registrar en el log
-
-        return;
-    }
+    int src_fd, dest_fd;
+    char buffer[BUFFER_SIZE];
+    ssize_t bytes_read, bytes_written;
+    struct stat dest_stat;
+    char final_destino[1024];
 
     // Verificar si el destino es un directorio
-    if (stat(destino, &st) == 0 && S_ISDIR(st.st_mode)) {
-        // Si el destino es un directorio, crear la ruta completa para el archivo destino
-        snprintf(pathDestino, sizeof(pathDestino), "%s/%s", destino, strrchr(origen, '/') ? strrchr(origen, '/') + 1 : origen);
+    if (stat(destino, &dest_stat) == 0 && S_ISDIR(dest_stat.st_mode)) {
+        // Si es un directorio, concatenar el nombre del archivo origen al destino
+        snprintf(final_destino, sizeof(final_destino), "%s/%s", destino, basename((char *)origen));
     } else {
-        // Si el destino no es un directorio, usarlo tal cual
-        strncpy(pathDestino, destino, sizeof(pathDestino));
+        // Si no es un directorio, usar el destino tal cual
+        strncpy(final_destino, destino, sizeof(final_destino) - 1);
+        final_destino[sizeof(final_destino) - 1] = '\0';
     }
 
-    // Abrir el archivo origen en modo lectura binaria
-    f_origen = fopen(origen, "rb");
-    if (f_origen == NULL) {
-        printf("Error al abrir el archivo origen '%s': %s\n", origen, strerror(errno));
+    // Abrir el archivo de origen en modo solo lectura
+    src_fd = open(origen, O_RDONLY);
+    if (src_fd < 0) {
+        //registrar_error("Error al abrir el archivo de origen");
         return;
     }
 
-    // Abrir el archivo destino en modo escritura binaria
-    f_destino = fopen(pathDestino, "wb");
-    if (f_destino == NULL) {
-        printf("Error al crear el archivo destino '%s': %s\n", pathDestino, strerror(errno));
-        fclose(f_origen);
+    // Abrir o crear el archivo de destino en modo escritura
+    dest_fd = open(final_destino, O_WRONLY | O_CREAT | O_TRUNC, 0644);
+    if (dest_fd < 0) {
+        //registrar_error("Error al crear el archivo de destino");
+        close(src_fd);
         return;
     }
 
-    // Copiar el contenido del archivo origen al archivo destino
-    while ((bytes = fread(buffer, 1, sizeof(buffer), f_origen)) > 0) {
-        fwrite(buffer, 1, bytes, f_destino);
+    // Leer del archivo origen y escribir en el archivo de destino en bloques de tamaño BUFFER_SIZE
+    while ((bytes_read = read(src_fd, buffer, BUFFER_SIZE)) > 0) {
+        bytes_written = write(dest_fd, buffer, bytes_read);
+        if (bytes_written != bytes_read) {
+            //registrar_error("Error al escribir en el archivo de destino");
+            close(src_fd);
+            close(dest_fd);
+            return;
+        }
     }
 
-    printf("Archivo '%s' copiado a '%s'.\n", origen, pathDestino);
+    // Cerrar los archivos de origen y destino
+    close(src_fd);
+    close(dest_fd);
 
-    fclose(f_origen);
-    fclose(f_destino);
+    // Imprimir un mensaje indicando que el archivo ha sido copiado
+    printf("Archivo copiado de '%s' a '%s'.\n", origen, final_destino);
 }
+
+// Función para copiar un directorio de forma recursiva
+void copiar_directorio(const char *origen, const char *destino) {
+    DIR *dir;
+    struct dirent *entry;
+    struct stat statbuf;
+    char src_path[PATH_MAX];
+    char dest_path[PATH_MAX];
+
+
+    // // Crea el directorio de destino si no existe, tira error si no se pudo
+    if (mkdir(destino, 0755) < 0 && errno != EEXIST) {
+        //registrar_error("Error al crear el directorio de destino");
+        return;
+    }
+
+    // Abre el directorio de origen
+    dir = opendir(origen);
+    if (dir == NULL) {
+        //registrar_error("Error al abrir el directorio de origen");
+        return;
+    }
+
+    // se lee las entradas del directorio de origen
+    while ((entry = readdir(dir)) != NULL) {
+        // Ignora las entradas "." y ".."
+        if (strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0) {
+            continue;
+        }
+
+        // Construye las rutas completas de origen y destino
+        snprintf(src_path, sizeof(src_path), "%s/%s", origen, entry->d_name);
+        snprintf(dest_path, sizeof(dest_path), "%s/%s", destino, entry->d_name);
+
+        // Obtiene información sobre la entrada actual
+        if (stat(src_path, &statbuf) == 0) {
+            if (S_ISDIR(statbuf.st_mode)) {
+                // Si es un directorio, copiar recursivamente
+                copiar_directorio(src_path, dest_path);
+            } else if (S_ISREG(statbuf.st_mode)) {
+                // Si es un archivo, copiar
+                copiar_archivo(src_path, dest_path);
+            }
+        }
+    }
+
+    // Cierra el directorio de origen
+    closedir(dir);
+
+    // Imprime un mensaje indicando que el directorio ha sido copiado
+    printf("Directorio copiado de '%s' a '%s'.\n", origen, destino);
+}
+
+
+// Función para decidir si se copia un archvo o un directorio
+void copiar(const char *origen, const char *destino) {
+    struct stat statbuf;
+
+    // Obtiene información sobre el origen
+    if (stat(origen, &statbuf) < 0) {
+        
+        printf("Error al obtener información del origen, verifica si existe archivo o directorio.\n");
+
+         // esto es para ir agregando los errores que se le presentan al usuario e ir guardando en sistema_error.log
+        char mensaje[256];
+        snprintf(mensaje, sizeof(mensaje), "Error al obtener información del origen, verifica si existe archivo o directorio.\n");
+        registrar_error(mensaje);  // Registrar en el log
+        return;
+    }
+
+
+    // Verifica si el origen es un directorio
+    if (S_ISDIR(statbuf.st_mode)) {
+        // Es un directorio: copiar recursivamente
+        copiar_directorio(origen, destino);
+    } else if (S_ISREG(statbuf.st_mode)) {
+        // Es un archivo: copiar
+        copiar_archivo(origen, destino);
+    } else {
+        // El origen no es un archivo ni un directorio válido
+        printf("El origen '%s' no es un archivo ni un directorio válido.\n", origen);
+    }
+}
+
 
 
 
@@ -593,7 +666,7 @@ int main() {
                 }
             } else if (strcmp(accion, "copiar") == 0) {
                 if (num_argumentos >= 2) {
-                    copiar_archivo(argumentos[0], argumentos[1]);
+                    copiar(argumentos[0], argumentos[1]);
                 } else {
                     printf("Error: Debes proporcionar el archivo o directorio origen y el destino.\n");
                 }
@@ -642,6 +715,13 @@ int main() {
                     ejecutar_comando(comando_final);
                 } else {
                     printf("Error: Debes proporcionar un comando del sistema para ejecutar.\n");
+                }
+            }
+            else if (strcmp(accion, "demonio") == 0) {
+                if (num_argumentos >= 2) {
+                    gestionar_demonio(argumentos[0], argumentos[1]);
+                } else {
+                    printf("Error: Debes proporcionar una acción ('start' o 'stop') y un servicio.\n");
                 }
             }
 

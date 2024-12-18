@@ -8,7 +8,6 @@
 #include <unistd.h>
 #include <stddef.h>
 
-
 #define USUARIOS_LOG_PATH "/var/log/shell/usuario_horarios_log.log"
 #define MOVIMIENTOS_LOG_PATH "/var/log/shell/shell_movimientos.log"
 #define ERRORES_LOG_PATH "/var/log/shell/sistema_error.log"
@@ -101,9 +100,10 @@ void obtener_timestamp(char *buffer, size_t buffer_size) {
     strftime(buffer, buffer_size, "%Y-%m-%d %H:%M:%S", tm_info);
 }
 
-// Función para obtener la IP actual del usuario
+// Funcion para obtener la IP actual del usuario
 void obtener_ip_actual(char *ip_buffer, size_t buffer_size) {
-    FILE *fp = popen("hostname -i | awk '{print $1}'", "r");
+    // se obtiene la direccion de la red local, la segunda direccion ip...
+    FILE *fp = popen("ip addr show | awk '/inet / {print $2}' | cut -d'/' -f1 | sed -n '2p'", "r");
 
     if (fp == NULL) {
         strncpy(ip_buffer, "desconocido", buffer_size);
@@ -115,8 +115,8 @@ void obtener_ip_actual(char *ip_buffer, size_t buffer_size) {
     pclose(fp);
 }
 
-// Función para validar el inicio de sesión
-// Función para comparar el usuario en el archivo
+// Funcion para validar el inicio de sesión
+// Funcion para comparar el usuario en el archivo
 void validar_inicio_sesion(const char *usuario, const char *ip_actual, const char *horario_actual, FILE *log_file) {
     char linea[256];
     FILE *usuarios_file = fopen("/usr/local/bin/usuarios_agregados.txt", "r");
@@ -143,13 +143,13 @@ void validar_inicio_sesion(const char *usuario, const char *ip_actual, const cha
 
                 // Validar horario
                 if (strcmp(horario_actual, horario_guardado) != 0) {
-                    fprintf(log_file, "Advertencia: Usuario '%s' inició sesión fuera del horario permitido. Horario actual: %s, Horario permitido: %s\n",
+                    fprintf(log_file, "Advertencia: Usuario '%s' inicio sesion fuera del horario permitido. Horario actual: %s, Horario permitido: %s\n",
                             usuario, horario_actual, horario_guardado);
                 }
 
                 // Validar IP
                 if (strstr(ips_guardadas, ip_actual) == NULL) {
-                    fprintf(log_file, "Advertencia: Usuario '%s' inició sesión desde una IP no permitida: %s. IPs permitidas: %s\n",
+                    fprintf(log_file, "Advertencia: Usuario '%s' inicio sesion desde una IP no permitida: %s. IPs permitidas: %s\n",
                             usuario, ip_actual, ips_guardadas);
                 }
                 break;
@@ -192,7 +192,7 @@ void registrar_sesion(const char *usuario, const char *accion, const char *ip_ac
     obtener_timestamp(timestamp, sizeof(timestamp));
 
     // Registrar la acción
-    fprintf(log_file, "%s: Usuario '%s' %s sesión desde IP '%s' en horario '%s'.\n",
+    fprintf(log_file, "%s: Usuario '%s' %s sesion desde IP '%s' en horario '%s'.\n",
             timestamp, usuario, accion, ip_actual, horario_actual);
 
     // Validar horario e IP
