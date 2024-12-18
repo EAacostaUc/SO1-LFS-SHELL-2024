@@ -287,7 +287,7 @@ void copiar(const char *origen, const char *destino) {
 
          // esto es para ir agregando los errores que se le presentan al usuario e ir guardando en sistema_error.log
         char mensaje[256];
-        snprintf(mensaje, sizeof(mensaje), "Error al obtener información del origen, vverifica si existe archivo o directorio.\n");
+        snprintf(mensaje, sizeof(mensaje), "Error al obtener información del origen, verifica si existe archivo o directorio.\n");
         registrar_error(mensaje);  // Registrar en el log
         return;
     }
@@ -715,6 +715,13 @@ int main() {
                     ejecutar_comando(comando_final);
                 } else {
                     printf("Error: Debes proporcionar un comando del sistema para ejecutar.\n");
+                }
+            }
+            else if (strcmp(accion, "demonio") == 0) {
+                if (num_argumentos >= 2) {
+                    gestionar_demonio(argumentos[0], argumentos[1]);
+                } else {
+                    printf("Error: Debes proporcionar una acción ('start' o 'stop') y un servicio.\n");
                 }
             }
 
