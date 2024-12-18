@@ -16,4 +16,8 @@ void obtener_ip_actual(char *ip_buffer, size_t buffer_size);
 void registrar_sesion(const char *usuario, const char *accion, const char *ip_actual, const char *horario_actual);
 void validar_inicio_sesion(const char *usuario, const char *ip_actual, const char *horario_actual, FILE *log_file);
 
+
+// Prototipo de la función gestionar_demonio
+void gestionar_demonio(const char *accion, const char *demonio);
+
 #endif // PROTOTIPOS_H
