@@ -7,7 +7,7 @@
 #include <errno.h>
 #include <unistd.h>
 #include <stddef.h>
-// hola....
+// hola.....................
 
 #define USUARIOS_LOG_PATH "/var/log/shell/usuario_horarios_log.log"
 #define MOVIMIENTOS_LOG_PATH "/var/log/shell/shell_movimientos.log"
