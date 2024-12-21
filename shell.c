@@ -445,6 +445,55 @@ int usuario_existe(const char *nombre_usuario) {
 }
 
 
+// // Función para agregar un nuevo usuario con contraseña, horario y lugares de conexión
+// void agregar_usuario(const char *nombre_usuario, const char *contrasena, const char *horario, const char *lugares_conexion) {
+//     if (usuario_existe(nombre_usuario)) {
+//         printf("Error: El usuario '%s' ya existe.\n", nombre_usuario);
+//         return;
+//     }
+
+//     // Crear el usuario en el sistema
+//     char comando[256];
+//     snprintf(comando, sizeof(comando), "useradd -m %s", nombre_usuario);
+//     if (system(comando) != 0) {
+//         printf("Error al agregar el usuario '%s'. Verifica si tienes permisos de root.\n", nombre_usuario);
+
+//         // esto es para ir agregando los errores que se le presentan al usuario e ir guardando en sistema_error.log
+//         char mensaje[256];
+//         snprintf(mensaje, sizeof(mensaje), "Error al crear el usuario '%s'. Verifica si tienes permisos de root.\n", nombre_usuario);
+//         registrar_error(mensaje);  // Registrar en el log
+//         return;
+//     }
+
+//     // Establecer la contraseña
+//     snprintf(comando, sizeof(comando), "echo '%s:%s' | chpasswd", nombre_usuario, contrasena);
+//     if (system(comando) != 0) {
+//         printf("Error al establecer la contraseña para '%s'.\n", nombre_usuario);
+//         return;
+//     }
+
+//     // Guardar los datos del usuario en el archivo
+//     FILE *archivo = fopen("/usr/local/bin/usuarios_agregados.txt", "a");
+//     if (archivo == NULL) {
+//         printf("Error al abrir el archivo para registrar datos adicionales.\n");
+//         return;
+//     }
+
+//     fprintf(archivo, "Usuario: %s\n", nombre_usuario);
+//     fprintf(archivo, "Horario: %s\n", horario);
+//     fprintf(archivo, "IPs permitidas: %s\n", lugares_conexion);
+//     fprintf(archivo, "-----------------------------------\n");
+
+//     fclose(archivo);
+
+//     printf("Usuario '%s' agregado con éxito, contraseña establecida y datos registrados.\n", nombre_usuario);
+// }
+
+
+
+
+// solo prueba
+
 // Función para agregar un nuevo usuario con contraseña, horario y lugares de conexión
 void agregar_usuario(const char *nombre_usuario, const char *contrasena, const char *horario, const char *lugares_conexion) {
     if (usuario_existe(nombre_usuario)) {
@@ -452,16 +501,15 @@ void agregar_usuario(const char *nombre_usuario, const char *contrasena, const c
         return;
     }
 
+    // Separar el horario en hora de entrada y hora de salida
+    char hora_entrada[6], hora_salida[6];
+    sscanf(horario, "%5[^,],%5s", hora_entrada, hora_salida);
+
     // Crear el usuario en el sistema
     char comando[256];
     snprintf(comando, sizeof(comando), "useradd -m %s", nombre_usuario);
     if (system(comando) != 0) {
         printf("Error al agregar el usuario '%s'. Verifica si tienes permisos de root.\n", nombre_usuario);
-
-        // esto es para ir agregando los errores que se le presentan al usuario e ir guardando en sistema_error.log
-        char mensaje[256];
-        snprintf(mensaje, sizeof(mensaje), "Error al crear el usuario '%s'. Verifica si tienes permisos de root.\n", nombre_usuario);
-        registrar_error(mensaje);  // Registrar en el log
         return;
     }
 
@@ -479,16 +527,14 @@ void agregar_usuario(const char *nombre_usuario, const char *contrasena, const c
         return;
     }
 
-    fprintf(archivo, "Usuario: %s\n", nombre_usuario);
-    //fprintf(archivo, "Contraseña: %s\n", contrasena);
-    fprintf(archivo, "Horario: %s\n", horario);
-    fprintf(archivo, "IPs permitidas: %s\n", lugares_conexion);
-    fprintf(archivo, "-----------------------------------\n");
-
+    // Guardar los datos en el formato: nombre_usuario|hora_entrada,hora_salida|IPs_permitidas
+    fprintf(archivo, "%s|%s|%s\n", nombre_usuario, horario, lugares_conexion);
     fclose(archivo);
 
     printf("Usuario '%s' agregado con éxito, contraseña establecida y datos registrados.\n", nombre_usuario);
 }
+
+
 
 
 
@@ -606,7 +652,10 @@ int main() {
     obtener_timestamp(horario_actual, sizeof(horario_actual)); // Usar esta función para obtener la hora actual
 
     // Registrar inicio de sesión
-    registrar_sesion(usuario, "inició", ip_actual, horario_actual);
+    //registrar_sesion(usuario, "inició", ip_actual, horario_actual);
+
+    // solo prueba
+    registrar_sesion(usuario, "inició", ip_actual, horario_actual, 0);
 
 
     //Bienvenido a la terminal personalizada. Escribe 'salir' para terminar.\n
@@ -735,7 +784,10 @@ int main() {
 
     // Registrar cierre de sesión
     obtener_timestamp(horario_actual, sizeof(horario_actual));
-    registrar_sesion(usuario, "cerró", ip_actual, horario_actual);
+    //registrar_sesion(usuario, "cerró", ip_actual, horario_actual);
+
+    // solo prueba
+    registrar_sesion(usuario, "cerró", ip_actual, horario_actual, 1);
 
     return 0;
 }
