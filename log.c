@@ -121,9 +121,8 @@ void obtener_ip_actual(char *ip_buffer, size_t buffer_size) {
 // Función para validar el inicio de sesión
 void validar_inicio_sesion(const char *usuario, const char *ip_actual, const char *hora_entrada, const char *hora_salida, FILE *log_file, int es_salida) {
     char linea[256];
-    FILE *usuarios_file = fopen("/usr/local/bin/usuarios_agregados.txt", "r");
+    FILE *usuarios_file = fopen("/usr/local/bin/usuarios_agregados.txt", "r"); // esto se cre recien cuando se agregan nuevos usuarios
     if (usuarios_file == NULL) {
-        fprintf(log_file, "Error: No se pudo abrir el archivo de usuarios para validar.\n");
         return;
     }
 

@@ -302,7 +302,7 @@ void copiar(const char *origen, const char *destino) {
         copiar_archivo(origen, destino);
     } else {
         // El origen no es un archivo ni un directorio válido
-        printf("El origen '%s' no es un archivo ni un directorio válido.\n", origen);
+        printf("El origen '%s' no es un archivo ni un directorio valido.\n", origen);
     }
 }
 
@@ -345,11 +345,11 @@ void cambiar_permisos(const char *modo, char **archivos, int num_archivos) {
     mode_t permisos = strtol(modo, &endptr, 8);
 
     if (*endptr != '\0' || permisos > 0777 || permisos < 0) {
-        printf("Error: El modo '%s' no es válido. Debe ser un número octal (ejemplo: 644, 755).\n", modo);
+        printf("Error: El modo '%s' no es valido..\n", modo);
 
         // esto es para ir agregando los errores que se le presentan al usuario e ir guardando en sistema_error.log
         char mensaje[256];
-        snprintf(mensaje, sizeof(mensaje), "Error: El modo '%s' no es válido. Debe ser un número octal (ejemplo: 644, 755).\n", modo);
+        snprintf(mensaje, sizeof(mensaje), "Error: El modo '%s' no es valido.\n", modo);
         registrar_error(mensaje);  // Registrar en el log
 
         return;
@@ -467,7 +467,7 @@ void agregar_usuario(const char *nombre_usuario, const char *contrasena, const c
     // Establecer la contraseña
     snprintf(comando, sizeof(comando), "echo '%s:%s' | chpasswd", nombre_usuario, contrasena);
     if (system(comando) != 0) {
-        printf("Error al establecer la contraseña para '%s'.\n", nombre_usuario);
+        printf("Error al establecer la contrasena para '%s'.\n", nombre_usuario);
         return;
     }
 
@@ -482,7 +482,7 @@ void agregar_usuario(const char *nombre_usuario, const char *contrasena, const c
     fprintf(archivo, "%s|%s|%s\n", nombre_usuario, horario, lugares_conexion);
     fclose(archivo);
 
-    printf("Usuario '%s' agregado con éxito, contraseña establecida y datos registrados.\n", nombre_usuario);
+    printf("Usuario '%s' agregado con exito, contrasena establecida y datos registrados.\n", nombre_usuario);
 }
 
 
@@ -505,7 +505,7 @@ void cambiar_contrasena(const char *nombre_usuario, const char *nueva_contrasena
     if (strcmp(usuario_actual, "root") == 0 || strcmp(usuario_actual, nombre_usuario) == 0) {
         if (strcmp(usuario_actual, nombre_usuario) == 0 && strcmp(usuario_actual, "root") != 0) {
             // El usuario no root cambiará su propia contraseña interactivamente
-            printf("Cambiando la contraseña del usuario '%s'. Por favor, introduce la nueva contraseña.\n", usuario_actual);
+            printf("Cambiando la contrasena del usuario '%s'. Por favor, introduce la nueva contrasena.\n", usuario_actual);
 
             char comando[256];
             snprintf(comando, sizeof(comando), "passwd");
@@ -513,24 +513,24 @@ void cambiar_contrasena(const char *nombre_usuario, const char *nueva_contrasena
             // Ejecutar el comando passwd sin el nombre del usuario
             int resultado = system(comando);
             if (resultado == 0) {
-                printf("Contraseña para el usuario '%s' cambiada con éxito.\n", usuario_actual);
+                printf("Contrasena para el usuario '%s' cambiada con exito.\n", usuario_actual);
 
                 // Registrar en el log
                 char mensaje[256];
-                snprintf(mensaje, sizeof(mensaje), "Contraseña para el usuario '%s' cambiada con éxito.\n", usuario_actual);
+                snprintf(mensaje, sizeof(mensaje), "Contrasena para el usuario '%s' cambiada con exito.\n", usuario_actual);
                 registrar_error(mensaje);
             } else {
-                printf("Error al cambiar la contraseña para el usuario '%s'.\n", usuario_actual);
+                printf("Error al cambiar la contrasena para el usuario '%s'.\n", usuario_actual);
 
                 // Registrar en el log
                 char mensaje[256];
-                snprintf(mensaje, sizeof(mensaje), "Error al cambiar la contraseña para el usuario '%s'.\n", usuario_actual);
+                snprintf(mensaje, sizeof(mensaje), "Error al cambiar la contrasena para el usuario '%s'.\n", usuario_actual);
                 registrar_error(mensaje);
             }
         } else {
             // El usuario root cambia contraseñas sin restricciones
             if (nueva_contrasena == NULL || strlen(nueva_contrasena) == 0) {
-                printf("Error: Debes proporcionar la nueva contraseña para el usuario '%s'.\n", nombre_usuario);
+                printf("Error: Debes proporcionar la nueva contrasena para el usuario '%s'.\n", nombre_usuario);
                 return;
             }
 
@@ -540,28 +540,28 @@ void cambiar_contrasena(const char *nombre_usuario, const char *nueva_contrasena
             // Ejecutar el comando
             int resultado = system(comando);
             if (resultado == 0) {
-                printf("Contraseña para el usuario '%s' cambiada con éxito.\n", nombre_usuario);
+                printf("Contrasena para el usuario '%s' cambiada con exito.\n", nombre_usuario);
 
                 // Registrar en el log
                 char mensaje[256];
-                snprintf(mensaje, sizeof(mensaje), "Contraseña para el usuario '%s' cambiada con éxito.\n", nombre_usuario);
+                snprintf(mensaje, sizeof(mensaje), "Contrasena para el usuario '%s' cambiada con exito.\n", nombre_usuario);
                 registrar_error(mensaje);
             } else {
-                printf("Error al cambiar la contraseña para el usuario '%s'.\n", nombre_usuario);
+                printf("Error al cambiar la contrasena para el usuario '%s'.\n", nombre_usuario);
 
                 // Registrar en el log
                 char mensaje[256];
-                snprintf(mensaje, sizeof(mensaje), "Error al cambiar la contraseña para el usuario '%s'.\n", nombre_usuario);
+                snprintf(mensaje, sizeof(mensaje), "Error al cambiar la contrasena para el usuario '%s'.\n", nombre_usuario);
                 registrar_error(mensaje);
             }
         }
     } else {
         // Si el usuario no es root y no coincide con la cuenta actual
-        printf("Error: No tienes permisos para cambiar la contraseña de otros usuarios.\n");
+        printf("Error: No tienes permisos para cambiar la contrasena de otros usuarios.\n");
 
         // Registrar en el log
         char mensaje[256];
-        snprintf(mensaje, sizeof(mensaje), "Error: Usuario '%s' intentó cambiar la contraseña de '%s' sin permisos.\n", usuario_actual, nombre_usuario);
+        snprintf(mensaje, sizeof(mensaje), "Error: Usuario '%s' intento cambiar la contrasena de '%s' sin permisos.\n", usuario_actual, nombre_usuario);
         registrar_error(mensaje);
     }
 }
@@ -603,7 +603,7 @@ int main() {
     obtener_timestamp(horario_actual, sizeof(horario_actual)); // Usar esta función para obtener la hora actual
 
     // registra el inicio de sesion
-    registrar_sesion(usuario, "inició", ip_actual, horario_actual, 0);
+    registrar_sesion(usuario, "inicio", ip_actual, horario_actual, 0);
 
 
     //Bienvenido a la terminal personalizada. Escribe 'salir' para terminar.\n
@@ -639,7 +639,7 @@ int main() {
                 if (num_argumentos >= 1) {
                     crear_directorio(argumentos[0]);
                 } else {
-                    printf("Error: No se proporcionó un nombre para el directorio.\n");
+                    printf("Error: No se proporciono un nombre para el directorio.\n");
                 }
             } else if (strcmp(accion, "listar") == 0) {
                 listar_directorios(num_argumentos >= 1 ? argumentos[0] : NULL);
@@ -647,7 +647,7 @@ int main() {
                 if (num_argumentos >= 1) {
                     cambiar_directorio(argumentos[0]);
                 } else {
-                    printf("Error: No se proporcionó un nombre para el directorio.\n");
+                    printf("Error: No se proporciono un nombre para el directorio.\n");
                 }
             } else if (strcmp(accion, "renombrar") == 0) {
                 if (num_argumentos >= 2) {
@@ -689,7 +689,7 @@ int main() {
                 if (num_argumentos >= 4) {  // Ahora esperamos 4 argumentos: nombre_usuario, contrasena, horario, lugares_conexion
                     agregar_usuario(argumentos[0], argumentos[1], argumentos[2], argumentos[3]);
                 } else {
-                    printf("Error: Debes proporcionar el nombre del usuario, contraseña, horario y lugares de conexión.\n");
+                    printf("Error: Debes proporcionar el nombre del usuario, contrasena, horario y lugares de conexion.\n");
                 }
             }
             else if (strcmp(accion, "contrasena") == 0) {
@@ -732,7 +732,7 @@ int main() {
 
     // Registrar cierre de sesión
     obtener_timestamp(horario_actual, sizeof(horario_actual));
-    registrar_sesion(usuario, "cerró", ip_actual, horario_actual, 1);
+    registrar_sesion(usuario, "cerro", ip_actual, horario_actual, 1);
 
     return 0;
 }

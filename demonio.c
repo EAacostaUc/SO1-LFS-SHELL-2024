@@ -73,7 +73,7 @@ void iniciar_demonio(const char *demonio) {
 pid_t obtener_pid(const char *demonio) {
     FILE *pid_file = fopen("/tmp/fake_daemon.pid", "r");  // Abre el archivo donde se guarda el PID.
     if (!pid_file) {
-        printf("No se encontró el archivo del PID para el demonio '%s'.\n", demonio);
+        printf("No se encontro el archivo del PID para el demonio '%s'.\n", demonio);
         return -1;  // Si no se encuentra el archivo, retorna -1.
     }
 
@@ -94,14 +94,19 @@ void detener_demonio(const char *demonio) {
     pid_t pid = obtener_pid(demonio);  // Obtiene el PID del demonio desde el archivo.
     if (pid == -1) {
         // Si no se encuentra el PID, muestra un mensaje de error y registra el error en el log.
-        printf("Error: No se encontró el demonio '%s' en ejecución.\n", demonio);
+        printf("Error al intentar detener el demonio (servicio no inicializado) '%s'.\n", demonio);
+
+        // Registrar en el log
+        char mensaje[256];
+        snprintf(mensaje, sizeof(mensaje), "Error al intentar detener el demonio (servicio no inicializado) '%s'.\n", demonio);
+        registrar_error(mensaje);
 
         return;  
     }
 
     // Intenta detener el demonio enviando SIGTERM.
     if (kill(pid, SIGTERM) == 0) {
-        printf("Demonio '%s' detenido con éxito.\n", demonio);
+        printf("Demonio '%s' detenido con exito.\n", demonio);
     } else {
         printf("Error al intentar detener el demonio (servicio no inicializado)'%s'.\n", demonio);  // Si no se puede detener el demonio, muestra un error.
 
@@ -127,11 +132,11 @@ void gestionar_demonio(const char *accion, const char *demonio) {
     } 
     else {
         // Si la acción no es válida, muestra un mensaje de error.
-        printf("Acción no válida. Usa 'start' o 'stop'.\n");
+        printf("Accion no valida. Usa 'start' o 'stop'.\n");
 
         // Registrar en el log
         char mensaje[256];
-        snprintf(mensaje, sizeof(mensaje), "Error, acción no válida. Usa 'start' o 'stop'.\n'%s'.\n", demonio);
+        snprintf(mensaje, sizeof(mensaje), "Error, accion no valida. Usa 'start' o 'stop'.\n'%s'.\n", demonio);
         registrar_error(mensaje);
     }
 }
