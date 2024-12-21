@@ -97,8 +97,6 @@ void obtener_timestamp(char *buffer, size_t buffer_size) {
     time_t t = time(NULL);
     struct tm *tm_info = localtime(&t);
 
-    // Formatear el timestamp como 'YYYY-MM-DD hh:mm:ss'
-    //strftime(buffer, buffer_size, "%Y-%m-%d %H:%M:%S", tm_info);
     // Formatear el timestamp como 'hh:mm'
     strftime(buffer, buffer_size, "%H:%M", tm_info);
 }
@@ -106,7 +104,7 @@ void obtener_timestamp(char *buffer, size_t buffer_size) {
 // Funcion para obtener la IP actual del usuario
 void obtener_ip_actual(char *ip_buffer, size_t buffer_size) {
     // se obtiene la direccion de la red local, la segunda direccion ip...
-    FILE *fp = popen("ip addr show | awk '/inet / {print $2}' | cut -d'/' -f1 | sed -n '2p'", "r");
+    FILE *fp = popen("hostname -i | awk '{print $1}'", "r");
 
     if (fp == NULL) {
         strncpy(ip_buffer, "desconocido", buffer_size);
