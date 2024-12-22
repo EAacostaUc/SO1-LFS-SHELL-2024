@@ -2,7 +2,7 @@
 #include <stdlib.h>     // Para funciones generales (malloc, free, etc.)
 #include <string.h>     // Para manipulación de cadenas (strtok, strcmp, etc.)
 #include <unistd.h>     // Para funciones del sistema (chdir, getcwd)
-#include <sys/stat.h>   // Para manipulación de directorios (mkdir)
+#include <sys/stat.h>   // Para manipulación de directorios
 #include <errno.h>      // Para obtener mensajes de error del sistema
 #include <dirent.h>     // Para opendir(), readdir(), closedir()
 #include <pwd.h>       // Para verificar si el usuario existe
@@ -721,6 +721,20 @@ int main() {
                     printf("Error: Debes proporcionar una acción ('start' o 'stop') y un servicio.\n");
                 }
             }
+
+            else if (strcmp(accion, "transferir") == 0) {
+                if (num_argumentos == 3) { // Protocolo, archivo_local, servidor:ruta_remota
+                
+                    if (strcmp(argumentos[0], "scp") == 0) {
+                        ejecutar_transferencia_scp(argumentos[1], argumentos[2]);
+                    } else {
+                        printf("Error: Protocolo '%s' no soportado, solo se admite 'scp'.\n", argumentos[0]);
+                    }
+                } else {
+                    printf("Error: Uso correcto: transferir scp <archivo_local> <usuario>@<servidor>:<ruta_remota>\n");
+                }
+            }
+
 
             else if (strcmp(accion, "salir") == 0) {
                 break;

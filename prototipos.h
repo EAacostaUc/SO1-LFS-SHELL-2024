@@ -19,4 +19,8 @@ void registrar_sesion(const char *usuario, const char *accion, const char *ip_ac
 void gestionar_demonio(const char *accion, const char *demonio);
 
 
+// Prototipos de funciones para Scp
+void ejecutar_transferencia_scp(const char *archivo_local, const char *destino);
+void registrar_transferencia_log(const char *archivo_local, const char *destino, int exito);
+
 #endif // PROTOTIPOS_H
