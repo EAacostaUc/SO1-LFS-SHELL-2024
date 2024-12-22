@@ -3,8 +3,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
-#include <sys/stat.h>
-#include <errno.h>
+#include <sys/stat.h>  // Para el uso de 'stat', para verificar existencia de archivos/directorios
+#include <errno.h>    // Para obtener mensajes de error del sistema
 #include <unistd.h>
 #include <stddef.h>
 
@@ -13,7 +13,7 @@
 #define ERRORES_LOG_PATH "/var/log/shell/sistema_error.log"
 
 
-// Función para registrar un error en el archivo de log
+// Función para registrar un error en el archivo de log, ocasionados por los usuarios, por ej: al usar de forma incorrecta los comandos.
 void registrar_error(const char *mensaje) {
     struct stat st;
 
@@ -104,7 +104,7 @@ void obtener_timestamp(char *buffer, size_t buffer_size) {
 // Funcion para obtener la IP actual del usuario
 void obtener_ip_actual(char *ip_buffer, size_t buffer_size) {
     // se obtiene la direccion de la red local, la segunda direccion ip...
-    FILE *fp = popen("hostname -i | awk '{print $1}'", "r");
+    FILE *fp = popen("hostname -i | awk '{print $1}'", "r");  // trabajamos con 'hostname -i' con esto no tenemos problemas en el LFS
 
     if (fp == NULL) {
         strncpy(ip_buffer, "desconocido", buffer_size);
@@ -167,7 +167,7 @@ void validar_inicio_sesion(const char *usuario, const char *ip_actual, const cha
             }
         }
     }
-
+    // cuando el usuario que ingreso no ha sido agregado previamente, no esta en "usuarios_agregados.txt", en el caso del 'root' por ejemplo.
     if (!encontrado) {
         fprintf(log_file, "Usuario '%s' no esta registrado en el sistema.\n", usuario);
     }

@@ -1,5 +1,6 @@
-#include <stdio.h>
-#include <stddef.h>
+// estas cabeceras fueron necesarias para el funcionamiento correcto (generaba error al no incluirlas)
+#include <stdio.h>  // para trabajar con FILE
+#include <stddef.h>  //para trabajar con size_t
 #ifndef PROTOTIPOS_H
 #define PROTOTIPOS_H
 

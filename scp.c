@@ -1,9 +1,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <time.h>
-#include <sys/stat.h>   // Para manipulación de directorios
-#include <unistd.h>     // Para funciones del sistema (chdir, getcwd)
+#include <time.h>        // Lo usamos para obtener el tiempo actual
+#include <sys/stat.h>   // Para manipulación de directorios, lo uso para "stat" para verificar existencia de archivos o directorios
+#include <unistd.h>     // Para funciones del sistema 
 #include <errno.h>      // Para obtener mensajes de error del sistema
 #include "prototipos.h"
 
@@ -16,7 +16,7 @@ void registrar_transferencia_log(const char *archivo_local, const char *destino,
 
     // Crear el directorio /var/log/shell si no existe
     if (stat("/var/log/shell", &st) == -1) {
-        if (mkdir("/var/log/shell", 0777) != 0) {
+        if (mkdir("/var/log/shell", 0777) != 0) {   // le doy todos los permisos para que otros puedan escribir en el, que es lo que se busca para registrar acciones/movimientos
             printf("Error al crear el directorio /var/log/shell: %s\n", strerror(errno));
             return;
         }
@@ -48,21 +48,40 @@ void registrar_transferencia_log(const char *archivo_local, const char *destino,
 
 
 
-// Función para ejecutar la transferencia con SCP
+// Función para ejecutar la transferencia con SCP, para trensferir tanto archivos como directorios...
 void ejecutar_transferencia_scp(const char *archivo_local, const char *destino) {
+    struct stat st;
+
+    // Verificar si el archivo o directorio existe y obtener su información
+    if (stat(archivo_local, &st) != 0) {
+        printf("Error: No se puede acceder a '%s', verificar su existencia.\n", archivo_local);
+        registrar_transferencia_log(archivo_local, destino, 0); // si no existe, sera una transferencia fallida (exito = 0)
+
+        // Registrar en el log si es que no existe el archivo o el usuario destino
+        char mensaje[256];
+        snprintf(mensaje, sizeof(mensaje), "Error: No se puede acceder a '%s', verificar su existencia.\n", archivo_local);
+        registrar_error(mensaje);
+        return;
+    }
 
     // Comando SCP
     char comando[512];
-    snprintf(comando, sizeof(comando), "scp %s %s", archivo_local, destino); // se carga en 'comando' "scp arch.txt user1@192.158.0.16:/home/user1" (por ejemplo)
+
+    // Construir el comando para scp según sea un archivo o un directorio
+    if (S_ISDIR(st.st_mode)) {
+        snprintf(comando, sizeof(comando), "scp -r %s %s", archivo_local, destino); // Para directorios
+    } else {
+        snprintf(comando, sizeof(comando), "scp %s %s", archivo_local, destino); // Para archivos
+    }
 
     // Ejecutar el comando SCP
     printf("Ejecutando: %s\n", comando);
-    int resultado = system(comando);  // "system" es para hacer llamada al sistema y ejecutar "scp arch.txt user1@192.158.0.16:/home/user1"
+    int resultado = system(comando); // "system" es para hacer llamada al sistema y ejecutar "scp arch.txt user1@192.158.0.16:/home/user1"
 
     if (resultado == 0) { // si 'resultado' es cero, estonces se uso correctamente el 'scp' y pudo ejecutar sin problema...
         printf("Transferencia exitosa: %s -> %s\n", archivo_local, destino);
-        registrar_transferencia_log(archivo_local, destino, 1);  // el '1' significa una transferencia "existosa"
-    } else {
+        registrar_transferencia_log(archivo_local, destino, 1); // el '1' significa una transferencia "existosa"
+    } else { // Comando fallido
         printf("Error en la transferencia: %s -> %s\n", archivo_local, destino);
         registrar_transferencia_log(archivo_local, destino, 0); // el '0' significa una transferencia "fallida"
 

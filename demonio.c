@@ -120,13 +120,13 @@ void detener_demonio(const char *demonio) {
 }
 
 // Función principal para gestionar demonios
-// Esta función se encarga de iniciar o detener el demonio basado en la acción pasada.
+// Esta función se encarga de iniciar o detener el demonio basado en la acción pasada...
 void gestionar_demonio(const char *accion, const char *demonio) {
     // Si la acción es 'start' y el demonio es 'fake_daemon', se inicia el demonio.
     if (strcmp(accion, "start") == 0 && strcmp(demonio, "fake_daemon") == 0) {
         iniciar_demonio(demonio);
     } 
-    // Si la acción es 'stop' y el demonio es 'fake_daemon', se detiene el demonio.
+    // Si la acción es 'stop' y el demonio es 'fake_daemon', se detiene el demonio...
     else if (strcmp(accion, "stop") == 0 && strcmp(demonio, "fake_daemon") == 0) {
         detener_demonio(demonio);
     } 

@@ -1,15 +1,15 @@
 #include <stdio.h>      // Para entrada/salida estándar
-#include <stdlib.h>     // Para funciones generales (malloc, free, etc.)
-#include <string.h>     // Para manipulación de cadenas (strtok, strcmp, etc.)
-#include <unistd.h>     // Para funciones del sistema (chdir, getcwd)
+#include <stdlib.h>     // Para funciones generales (malloc, free, etc...)
+#include <string.h>     // Para manipulación de cadenas (strtok, strcmp, etc...)
+#include <unistd.h>     // Para funciones del sistema 
 #include <sys/stat.h>   // Para manipulación de directorios
 #include <errno.h>      // Para obtener mensajes de error del sistema
 #include <dirent.h>     // Para opendir(), readdir(), closedir()
 #include <pwd.h>       // Para verificar si el usuario existe
 #include <grp.h>       // Para obtener información del grupo
-#include <time.h>
+#include <time.h>      // Lo usamos para ontener el tiempo actual en el sistema
 #include <fcntl.h>     // Para operaciones con archivos
-#include <libgen.h>
+#include <libgen.h>    // Necesario para el comando 'copiar'
 #include "prototipos.h"
 
 #define BUFFER_SIZE 4096 //tamaño del buffer que se utiliza para leer y escribir bloques de datos durante la copia del archivo.
@@ -463,7 +463,7 @@ void agregar_usuario(const char *nombre_usuario, const char *contrasena, const c
         printf("Error al agregar el usuario '%s'. Verifica si tienes permisos de root.\n", nombre_usuario);
         return;
     }
-
+    
     // Establecer la contraseña
     snprintf(comando, sizeof(comando), "echo '%s:%s' | chpasswd", nombre_usuario, contrasena);
     if (system(comando) != 0) {
@@ -746,6 +746,7 @@ int main() {
 
     // Registrar cierre de sesión
     obtener_timestamp(horario_actual, sizeof(horario_actual));
+    // el usuario cerro sesion
     registrar_sesion(usuario, "cerro", ip_actual, horario_actual, 1);
 
     return 0;

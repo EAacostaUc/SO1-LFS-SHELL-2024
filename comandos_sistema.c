@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-// Lista de comandos prohibidos basada en las funcionalidades implementadas
+// Lista de comandos prohibidos, si intenta usar estos comandos te dara error, son los comandos que hemos implementado...
 const char *comandos_prohibidos[] = {
     "cp", "mv", "rename", "ls", "mkdir", "cd", "chmod", "chown", "passwd", "adduser", "useradd", "service", "systemctl"
 };
