@@ -50,20 +50,25 @@ void registrar_transferencia_log(const char *archivo_local, const char *destino,
 
 // Función para ejecutar la transferencia con SCP
 void ejecutar_transferencia_scp(const char *archivo_local, const char *destino) {
-   
+
     // Comando SCP
     char comando[512];
-    snprintf(comando, sizeof(comando), "scp %s %s", archivo_local, destino);
+    snprintf(comando, sizeof(comando), "scp %s %s", archivo_local, destino); // se carga en 'comando' "scp arch.txt user1@192.158.0.16:/home/user1" (por ejemplo)
 
     // Ejecutar el comando SCP
     printf("Ejecutando: %s\n", comando);
-    int resultado = system(comando);
+    int resultado = system(comando);  // "system" es para hacer llamada al sistema y ejecutar "scp arch.txt user1@192.158.0.16:/home/user1"
 
-    if (resultado == 0) {
+    if (resultado == 0) { // si 'resultado' es cero, estonces se uso correctamente el 'scp' y pudo ejecutar sin problema...
         printf("Transferencia exitosa: %s -> %s\n", archivo_local, destino);
-        registrar_transferencia_log(archivo_local, destino, 1);
+        registrar_transferencia_log(archivo_local, destino, 1);  // el '1' significa una transferencia "existosa"
     } else {
         printf("Error en la transferencia: %s -> %s\n", archivo_local, destino);
-        registrar_transferencia_log(archivo_local, destino, 0);
+        registrar_transferencia_log(archivo_local, destino, 0); // el '0' significa una transferencia "fallida"
+
+        // Registrar en el log si es que no existe el archivo o el usuario destino
+        char mensaje[256];
+        snprintf(mensaje, sizeof(mensaje), "Error en la transferencia: %s -> %s, \n", archivo_local, destino);
+        registrar_error(mensaje);
     }
 }
