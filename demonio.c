@@ -27,7 +27,7 @@ void fake_daemon() {
         // Registra que el demonio está en ejecución.
         fprintf(log, "fake_daemon ejecutandose...\n");
         fflush(log);  // Asegura que se escriba el contenido en el archivo.
-        sleep(3);  // El demonio duerme 5 segundos entre cada registro, simulando actividad.
+        sleep(3);  // El demonio duerme 3 segundos entre cada registro, simulando actividad.
     }
 
     fclose(log);  // Este código nunca se alcanzará debido al bucle infinito.

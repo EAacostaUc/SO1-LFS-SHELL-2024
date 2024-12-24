@@ -147,7 +147,11 @@ void validar_inicio_sesion(const char *usuario, const char *ip_actual, const cha
 
                 // Validar la IP
                 if (strstr(ips_guardadas, ip_actual) == NULL) {
+<<<<<<< HEAD
                     fprintf(log_file, "Usuario '%s' inicio sesion desde una IP no permitida: %s. IP permitidas: %s\n",
+=======
+                    fprintf(log_file, "Usuario '%s' inicio sesion desde una IP no permitida: %s. IP permitida: %s\n",
+>>>>>>> a6689c6bd541a97c22c243d6cf355fc3e198b8dd
                             usuario, ip_actual, ips_guardadas);
                 }
 
