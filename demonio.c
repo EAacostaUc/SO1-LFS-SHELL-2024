@@ -1,11 +1,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <unistd.h>
-#include <signal.h>
-#include <sys/types.h>
-#include <sys/wait.h>
-#include <errno.h>
+#include <unistd.h>  // para trabajar con fork()
+#include <signal.h>  // para usar kill
+#include <sys/types.h>  // para usar pid_t, para representar identificadores de procesos
+#include <errno.h>   // para obtener errorres del sistema
 #include "prototipos.h"
 
 // Función para simular un demonio

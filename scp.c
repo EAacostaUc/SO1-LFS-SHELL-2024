@@ -37,13 +37,13 @@ void registrar_transferencia_log(const char *usuario_origen, const char *archivo
     strftime(timestamp, sizeof(timestamp), "%Y-%m-%d %H:%M:%S", tm_info);
 
 
-    // Verificar que `usuario_origen` sea válido, en caso de que no sea valido, le daremos por nombre "desconocido"
+    // Verificar que `usuario_origen` sea valido, en caso de que no sea valido, le daremos por nombre "desconocido"
     if (usuario_origen == NULL) {
         usuario_origen = "desconocido";
     }
 
     // Registrar la transferencia en el log
-    fprintf(log_file, "[%s] Transferencia %s: Usuario '%s' utilizó scp para transferir '%s' -> '%s'\n",
+    fprintf(log_file, "[%s] Transferencia %s: Usuario '%s' utilizo scp para transferir '%s' -> '%s'\n",
             timestamp,
             exito ? "EXITOSA" : "FALLIDA",
             usuario_origen,
