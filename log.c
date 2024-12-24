@@ -2,11 +2,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <time.h>
+#include <time.h>      // para obtener la 'hora' en tiempo real
 #include <sys/stat.h>  // Para el uso de 'stat', para verificar existencia de archivos/directorios
 #include <errno.h>    // Para obtener mensajes de error del sistema
-#include <unistd.h>
-#include <stddef.h>
+#include <unistd.h>   // Para funciones del sistema
+#include <stddef.h>   //para trabajar con size_t
 
 #define USUARIOS_LOG_PATH "/var/log/shell/usuario_horarios_log.log"
 #define MOVIMIENTOS_LOG_PATH "/var/log/shell/shell_movimientos.log"
@@ -145,13 +145,10 @@ void validar_inicio_sesion(const char *usuario, const char *ip_actual, const cha
             if (strcmp(usuario, usuario_guardado) == 0) {
                 encontrado = 1;
 
+
                 // Validar la IP
                 if (strstr(ips_guardadas, ip_actual) == NULL) {
-<<<<<<< HEAD
                     fprintf(log_file, "Usuario '%s' inicio sesion desde una IP no permitida: %s. IP permitidas: %s\n",
-=======
-                    fprintf(log_file, "Usuario '%s' inicio sesion desde una IP no permitida: %s. IP permitida: %s\n",
->>>>>>> a6689c6bd541a97c22c243d6cf355fc3e198b8dd
                             usuario, ip_actual, ips_guardadas);
                 }
 
@@ -166,6 +163,7 @@ void validar_inicio_sesion(const char *usuario, const char *ip_actual, const cha
                     fprintf(log_file, "Usuario '%s' cerro sesion fuera del horario permitido. Hora actual: %s, Hora de salida permitida: %s\n",
                             usuario, hora_salida, hora_salida_guardada);
                 }
+
 
                 break;
             }
