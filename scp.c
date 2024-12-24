@@ -11,7 +11,7 @@
 #define LOG_TRANSFERENCIAS "/var/log/shell/shell_transferencias.log"
 
 // Función para registrar transferencias en el log
-void registrar_transferencia_log(const char *archivo_local, const char *destino, int exito) {
+void registrar_transferencia_log(const char *usuario_origen, const char *archivo_local, const char *destino, int exito) {
     struct stat st;
 
     // Crear el directorio /var/log/shell si no existe
@@ -36,10 +36,17 @@ void registrar_transferencia_log(const char *archivo_local, const char *destino,
     struct tm *tm_info = localtime(&t);
     strftime(timestamp, sizeof(timestamp), "%Y-%m-%d %H:%M:%S", tm_info);
 
-    // Registrar transferencia
-    fprintf(log_file, "[%s] Transferencia %s: %s -> %s\n",
+
+    // Verificar que `usuario_origen` sea válido, en caso de que no sea valido, le daremos por nombre "desconocido"
+    if (usuario_origen == NULL) {
+        usuario_origen = "desconocido";
+    }
+
+    // Registrar la transferencia en el log
+    fprintf(log_file, "[%s] Transferencia %s: Usuario '%s' utilizó scp para transferir '%s' -> '%s'\n",
             timestamp,
             exito ? "EXITOSA" : "FALLIDA",
+            usuario_origen,
             archivo_local,
             destino);
 
@@ -48,14 +55,23 @@ void registrar_transferencia_log(const char *archivo_local, const char *destino,
 
 
 
+
 // Función para ejecutar la transferencia con SCP, para trensferir tanto archivos como directorios...
 void ejecutar_transferencia_scp(const char *archivo_local, const char *destino) {
     struct stat st;
 
+
+    // Obtener el usuario actual, esto es para que aparezca el nombre del usuario a la hora de registrar en el .log
+    const char *usuario_origen = getenv("USER");
+    if (usuario_origen == NULL) {
+        usuario_origen = "desconocido";
+    }
+
+
     // Verificar si el archivo o directorio existe y obtener su información
     if (stat(archivo_local, &st) != 0) {
         printf("Error: No se puede acceder a '%s', verificar su existencia.\n", archivo_local);
-        registrar_transferencia_log(archivo_local, destino, 0); // si no existe, sera una transferencia fallida (exito = 0)
+        registrar_transferencia_log(usuario_origen, archivo_local, destino, 0); // si no existe, sera una transferencia fallida (exito = 0)
 
         // Registrar en el log si es que no existe el archivo o el usuario destino
         char mensaje[256];
@@ -64,10 +80,11 @@ void ejecutar_transferencia_scp(const char *archivo_local, const char *destino) 
         return;
     }
 
-    // Comando SCP
-    char comando[512];
+
 
     // Construir el comando para scp según sea un archivo o un directorio
+    char comando[512];
+
     if (S_ISDIR(st.st_mode)) {
         snprintf(comando, sizeof(comando), "scp -r %s %s", archivo_local, destino); // Para directorios
     } else {
@@ -80,10 +97,10 @@ void ejecutar_transferencia_scp(const char *archivo_local, const char *destino) 
 
     if (resultado == 0) { // si 'resultado' es cero, estonces se uso correctamente el 'scp' y pudo ejecutar sin problema...
         printf("Transferencia exitosa: %s -> %s\n", archivo_local, destino);
-        registrar_transferencia_log(archivo_local, destino, 1); // el '1' significa una transferencia "existosa"
+        registrar_transferencia_log(usuario_origen, archivo_local, destino, 1); // el '1' significa una transferencia "existosa"
     } else { // Comando fallido
         printf("Error en la transferencia: %s -> %s\n", archivo_local, destino);
-        registrar_transferencia_log(archivo_local, destino, 0); // el '0' significa una transferencia "fallida"
+        registrar_transferencia_log(usuario_origen, archivo_local, destino, 0); // el '0' significa una transferencia "fallida"
 
         // Registrar en el log si es que no existe el archivo o el usuario destino
         char mensaje[256];

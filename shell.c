@@ -59,11 +59,11 @@ void listar_directorios(const char *ruta) {
 
     dir = opendir(ruta);
     if (dir == NULL) {
-        printf("Error al abrir el directorio '%s': %s\n", ruta, strerror(errno));
+        printf("Error al abrir el directorio '%s', verifique su existencia\n", ruta);
 
         // esto es para ir agregando los errores que se le presentan al usuario e ir guardando en sistema_error.log
         char mensaje[256];
-        snprintf(mensaje, sizeof(mensaje), "Error al abrir el directorio '%s': %s\n", ruta, strerror(errno));
+        snprintf(mensaje, sizeof(mensaje), "Error al abrir el directorio '%s', verifique su existencia\n", ruta);
         registrar_error(mensaje);  // Registrar en el log
 
         return;
@@ -85,11 +85,6 @@ void listar_directorios(const char *ruta) {
  * funcion "ir"
  * ---------------------------
  * Cambia el directorio actual a uno especificado por el usuario.
- *
- * Parámetros:
- *   nombre_directorio - Nombre del directorio al que se desea cambiar.
- *
- * Comportamiento:
  *   Si el cambio es exitoso, muestra el nuevo directorio actual.
  *   Si ocurre un error, muestra un mensaje descriptivo.
  */
@@ -107,11 +102,11 @@ void cambiar_directorio(const char *nombre_directorio) {
         }
     } else {
         // Mostrar un mensaje si ocurre un error al cambiar de directorio
-        printf("Error al cambiar al directorio '%s': %s\n", nombre_directorio, strerror(errno));
+        printf("Error al cambiar al directorio '%s', verifique su existencia\n", nombre_directorio);
 
         // esto es para ir agregando los errores que se le presentan al usuario e ir guardando en sistema_error.log
         char mensaje[256];
-        snprintf(mensaje, sizeof(mensaje), "Error al cambiar al directorio '%s': %s\n", nombre_directorio, strerror(errno));
+        snprintf(mensaje, sizeof(mensaje), "Error al cambiar al directorio '%s', verifique su existencia\n", nombre_directorio);
         registrar_error(mensaje);  // Registrar en el log
     }
 }
@@ -124,11 +119,11 @@ void renombrar_archivo(const char *nombre_actual, const char *nuevo_nombre) {
     if (rename(nombre_actual, nuevo_nombre) == 0) {
         printf("El archivo o directorio '%s' ha sido renombrado a '%s'.\n", nombre_actual, nuevo_nombre);
     } else {
-        printf("Error al renombrar '%s' a '%s': %s\n", nombre_actual, nuevo_nombre, strerror(errno));
+        printf("Error al renombrar '%s' a '%s', verifique su existencia\n", nombre_actual, nuevo_nombre);
 
         // esto es para ir agregando los errores que se le presentan al usuario e ir guardando en sistema_error.log
         char mensaje[256];
-        snprintf(mensaje, sizeof(mensaje), "Error al renombrar '%s' a '%s': %s\n", nombre_actual, nuevo_nombre, strerror(errno));
+        snprintf(mensaje, sizeof(mensaje), "Error al renombrar '%s' a '%s', verifique su existencia\n", nombre_actual, nuevo_nombre);
         registrar_error(mensaje);  // Registrar en el log
     }
 }
@@ -153,11 +148,11 @@ void mover_archivo_o_directorio(const char *origen, const char *destino) {
     if (rename(origen, ruta_final) == 0) {
         printf("Archivo o directorio '%s' movido a '%s'.\n", origen, ruta_final);
     } else {
-        printf("Error al mover '%s' a '%s': %s\n", origen, ruta_final, strerror(errno));
+        printf("Error al mover '%s' a '%s', verifique si el contenido a mover o el destino exista\n", origen, ruta_final);
 
         // esto es para ir agregando los errores que se le presentan al usuario e ir guardando en sistema_error.log
         char mensaje[256];
-        snprintf(mensaje, sizeof(mensaje), "Error al mover '%s' a '%s': %s\n", origen, ruta_final, strerror(errno));
+        snprintf(mensaje, sizeof(mensaje), "Error al mover '%s' a '%s', verifique si el contenido a mover o el destino exista\n", origen, ruta_final);
         registrar_error(mensaje);  // Registrar en el log
     }
 }
@@ -168,7 +163,7 @@ void mover_archivo_o_directorio(const char *origen, const char *destino) {
 /*
  * Función: copiar
  * -----------------------
- * Copia un archivo de origen a destino.
+ * Copia un archivo o directorio de origen a destino.
  * Si el destino es un directorio, lo copia dentro de él.
  */
 // Función para copiar archivos
@@ -192,14 +187,12 @@ void copiar_archivo(const char *origen, const char *destino) {
     // Abrir el archivo de origen en modo solo lectura
     src_fd = open(origen, O_RDONLY);
     if (src_fd < 0) {
-        //registrar_error("Error al abrir el archivo de origen");
         return;
     }
 
     // Abrir o crear el archivo de destino en modo escritura
     dest_fd = open(final_destino, O_WRONLY | O_CREAT | O_TRUNC, 0644);
     if (dest_fd < 0) {
-        //registrar_error("Error al crear el archivo de destino");
         close(src_fd);
         return;
     }
@@ -208,7 +201,6 @@ void copiar_archivo(const char *origen, const char *destino) {
     while ((bytes_read = read(src_fd, buffer, BUFFER_SIZE)) > 0) {
         bytes_written = write(dest_fd, buffer, bytes_read);
         if (bytes_written != bytes_read) {
-            //registrar_error("Error al escribir en el archivo de destino");
             close(src_fd);
             close(dest_fd);
             return;
@@ -492,7 +484,7 @@ void agregar_usuario(const char *nombre_usuario, const char *contrasena, const c
 
 
 
-// Función para cambiar la contraseña de un usuario
+// Función para cambiar la contraseña de un usuario, root puede cambiar la contrasena de aualquier usuario, pero un usuario normal solo podra cambiar el suyo.
 void cambiar_contrasena(const char *nombre_usuario, const char *nueva_contrasena) {
     // Obtener el usuario actual
     const char *usuario_actual = getenv("USER");
@@ -576,19 +568,12 @@ void cambiar_contrasena(const char *nombre_usuario, const char *nueva_contrasena
 
 /*
  * Función principal
- * -----------------
  * Proporciona una terminal interactiva que permite al usuario ejecutar los comandos:
- *   - 'creadir <nombre>' para crear un directorio.
- *   - 'listar' para listar los directorios creados.
- *   - 'ir <nombre>' para cambiar al directorio especificado.
- *   - 'salir' para terminar el programa.
- *
+ * En esta main estan todo los comandos solicitados en el tp
  * Comportamiento:
  *   Muestra un prompt (`>`) para que el usuario ingrese comandos.
  *   El programa continúa ejecutándose hasta que el usuario escribe 'salir'.
  */
-// Función principal
-
 
 int main() {
     char comando[256];
@@ -597,7 +582,7 @@ int main() {
     // se usa para hacer el registro de inicio y cierre de sesion
     char ip_actual[50];
     char horario_actual[50];
-    char *usuario = getenv("USER");
+    char *usuario = getenv("USER");  // con esto obtenemos el 'nombre' del usuario.
 
     obtener_ip_actual(ip_actual, sizeof(ip_actual)); // Para obtener su Ip actual
     obtener_timestamp(horario_actual, sizeof(horario_actual)); // Usar esta función para obtener la hora actual
