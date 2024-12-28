@@ -15,18 +15,10 @@
 #define BUFFER_SIZE 4096 //tamaño del buffer que se utiliza para leer y escribir bloques de datos durante la copia del archivo.
 
 
-/* probando probando
+/* 
  * Función: crear_directorio
  * -------------------------
- * Crea un nuevo directorio con permisos 0777 (lectura, escritura, ejecución para todos).
- * También guarda el nombre del directorio en un archivo llamado 'directorios.txt'.
- *
- * Parámetros:
- *   nombre_directorio - Nombre del directorio a crear.
- *
- * Comportamiento:
- *   Si el directorio se crea con éxito, se registra en el archivo 'directorios.txt'.
- *   Si ocurre un error, se muestra un mensaje descriptivo.
+ * Crea un nuevo directorio con permisos 0777 (lectura, escritura, ejecución para todos)
  */
 void crear_directorio(const char *nombre_directorio) {
     // Intentar crear el directorio
