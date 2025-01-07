@@ -49,6 +49,7 @@ void registrar_error(const char *mensaje) {
 
 
 
+
 // Función para registrar movimientos realizados por el usuario
 void registrar_movimientos(const char *comando) {
     FILE *log;
@@ -169,6 +170,7 @@ void validar_inicio_sesion(const char *usuario, const char *ip_actual, const cha
             }
         }
     }
+    
     // cuando el usuario que ingreso no ha sido agregado previamente, no esta en "usuarios_agregados.txt", en el caso del 'root' por ejemplo.
     // if (!encontrado) {
     //     fprintf(log_file, "Usuario '%s' no esta registrado en el sistema.\n", usuario);
