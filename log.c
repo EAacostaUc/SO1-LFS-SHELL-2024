@@ -119,6 +119,7 @@ void obtener_ip_actual(char *ip_buffer, size_t buffer_size) {
 
 
 
+
 // Función para validar el inicio de sesión
 void validar_inicio_sesion(const char *usuario, const char *ip_actual, const char *hora_entrada, const char *hora_salida, FILE *log_file, int es_salida) {
     char linea[256];
@@ -126,6 +127,7 @@ void validar_inicio_sesion(const char *usuario, const char *ip_actual, const cha
     if (usuarios_file == NULL) {
         return;
     }
+
 
     char usuario_guardado[50], hora_entrada_guardada[50], hora_salida_guardada[50], ips_guardadas[256];
     int encontrado = 0;
@@ -147,8 +149,8 @@ void validar_inicio_sesion(const char *usuario, const char *ip_actual, const cha
                 encontrado = 1;
 
 
-                // Validar la IP
-                if (strstr(ips_guardadas, ip_actual) == NULL) {
+                // Validar la IP (se agrego la bandera 'es_salida' para que solo muestre cuando inicia sesion, con esto se arregla la redundacia, mostraba al cerrar tembien sesion)
+                if (!es_salida && strstr(ips_guardadas, ip_actual) == NULL) {
                     fprintf(log_file, "Usuario '%s' inicio sesion desde una IP no permitida: %s. IP permitida: %s\n",
                             usuario, ip_actual, ips_guardadas);
                 }
